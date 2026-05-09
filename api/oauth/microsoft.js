@@ -19,8 +19,22 @@ import {
   disconnect
 } from '../_microsoft.js';
 
+// Resolve the HMAC secret used to sign OAuth state. Prefer a dedicated
+// OAUTH_STATE_SECRET when configured; otherwise fall back to CRON_SECRET
+// (which production sets and which is ≥32 random bytes). FAIL LOUDLY if
+// neither is set — silently using a literal "dev-secret" would let an
+// attacker forge state and silently link their own Microsoft account to
+// a victim's session.
+function resolveStateSecret() {
+  const s = process.env.OAUTH_STATE_SECRET || process.env.CRON_SECRET;
+  if (!s) {
+    throw new Error('OAuth state secret not configured: set OAUTH_STATE_SECRET (preferred) or CRON_SECRET in Vercel env vars');
+  }
+  return s;
+}
+
 function signState(userId) {
-  const secret = process.env.OAUTH_STATE_SECRET || process.env.CRON_SECRET || 'dev-secret';
+  const secret = resolveStateSecret();
   const payload = JSON.stringify({ userId, ts: Date.now() });
   const b64 = Buffer.from(payload).toString('base64url');
   const hmac = crypto.createHmac('sha256', secret).update(b64).digest('base64url');
@@ -30,7 +44,9 @@ function signState(userId) {
 function verifyState(state) {
   if (!state || !state.includes('.')) return null;
   const [b64, sig] = state.split('.');
-  const secret = process.env.OAUTH_STATE_SECRET || process.env.CRON_SECRET || 'dev-secret';
+  let secret;
+  try { secret = resolveStateSecret(); }
+  catch { return null; }   // verify-time misconfig → fail closed (no match)
   const expected = crypto.createHmac('sha256', secret).update(b64).digest('base64url');
   if (sig !== expected) return null;
   try {
