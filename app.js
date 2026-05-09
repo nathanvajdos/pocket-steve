@@ -639,14 +639,20 @@ btnBrief.addEventListener('click', async () => {
     briefResult.innerHTML = '';
     matches.forEach(m => {
       const original = entries.find(e => e.id === m.id) || m;
+      const briefingText = m.briefing || original.summary || '';
       const card = document.createElement('div');
       card.className = 'card';
       card.innerHTML = `
         <div class="where">${escapeHtml(original.where_met || '')}</div>
         <h3>${escapeHtml(original.headline || 'Someone you met')}</h3>
-        <div class="summary">${escapeHtml(m.briefing || original.summary || '')}</div>
+        <div class="summary">${escapeHtml(briefingText)}</div>
         <div class="meta">${formatWhen(original.created_at)}</div>
+        <div class="actions-row">
+          <button class="chip speak-btn" type="button">🔊 Read aloud</button>
+        </div>
       `;
+      const speakBtn = card.querySelector('.speak-btn');
+      speakBtn.addEventListener('click', () => speakBriefing(briefingText, speakBtn));
       briefResult.appendChild(card);
     });
   } catch (err) {
@@ -793,6 +799,35 @@ async function deleteEntry(div, entry) {
   } catch (err) {
     alert('Delete failed: ' + (err.message || ''));
   }
+}
+
+// ---------- read-aloud (browser speechSynthesis) ----------
+//
+// Auditory + visual encoding > visual alone (dual coding theory). Tap a card
+// to hear the briefing in your earbuds while you walk into the event — small
+// step toward the v3 ambient-voice vision. Tap again to stop.
+
+function speakBriefing(text, btn) {
+  if (!('speechSynthesis' in window)) {
+    btn.textContent = '🔇 unsupported';
+    btn.disabled = true;
+    return;
+  }
+  const synth = window.speechSynthesis;
+  if (synth.speaking || synth.pending) {
+    synth.cancel();
+    btn.textContent = '🔊 Read aloud';
+    return;
+  }
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = 1.0;
+  utt.pitch = 1.0;
+  utt.volume = 1.0;
+  utt.lang = 'en-US';
+  utt.onend = () => { btn.textContent = '🔊 Read aloud'; };
+  utt.onerror = () => { btn.textContent = '🔇 read failed'; setTimeout(() => { btn.textContent = '🔊 Read aloud'; }, 1500); };
+  btn.textContent = '⏸ Stop';
+  synth.speak(utt);
 }
 
 function escapeAttr(s) {
