@@ -25,8 +25,8 @@ Return ONLY valid JSON in this exact shape, no preamble, no markdown fences:
   "headline": "8 words max. Lead with the most distinctive detail. e.g. 'Tattooed couple from California with kid Malachi'.",
   "summary": "2-3 sentences in second person. Names if known, distinctive traits, kids/pets by name, end with a follow-up thread if any.",
   "names": ["explicit adult names mentioned, ordered as they appeared"],
-  "kids": ["kids' names mentioned (do not include pets here)"],
-  "pets": ["pets formatted as 'Name (species)' e.g. 'Otis (pug)'"],
+  "kids": ["kids' PROPER-NOUN names only. If the source gives count without names ('mom of two', 'three kids'), leave empty array. Do not include pets here."],
+  "pets": ["pets formatted as 'Name (species)' e.g. 'Otis (pug)'. PROPER NOUNS only. If the source gives count without names ('two huskies', 'a dog'), leave empty array."],
   "traits": ["max 4 distinctive observations; skip generic ones"],
   "where": "Where they met, inferred from voice memo + user input. Short phrase, title-cased if it's a proper place."
 }

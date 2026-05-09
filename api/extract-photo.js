@@ -27,8 +27,8 @@ Return ONLY valid JSON in this exact shape, no preamble, no markdown fences:
   "headline": "8 words max. Lead with the most distinctive concrete detail. e.g. 'Ranbir Patel, VP Eng at Acme'.",
   "summary": "2-3 sentences in second person. Names if known, role/company if visible, one distinctive detail, end with a follow-up thread if any.",
   "names": ["all visible/audible names, exactly as written on badge/card"],
-  "kids": ["any kids' names from voice memo only — photos rarely show this"],
-  "pets": ["any pets from voice memo, formatted as 'Otis (pug)'"],
+  "kids": ["kids' PROPER-NOUN names from voice memo only. If the user says count without names ('two kids'), leave empty array."],
+  "pets": ["pets from voice memo formatted as 'Otis (pug)'. PROPER NOUNS only. If the user says count without names ('a dog'), leave empty array."],
   "traits": ["max 4 distinctive observations: company, role, visible affiliations, conference, voice-memo notes"],
   "where": "Inferred event/place if visible (e.g. 'TechConf 2026'). Empty string if unclear.",
   "raw_text": "Verbatim text visible in the image, line-separated. Source-of-truth audit trail."
