@@ -298,7 +298,7 @@ This is a roadmap of *moat-deepening* features, not feature-of-the-week ideas. E
 | Phase | Feature | Why it deepens the moat |
 |---|---|---|
 | **v1 (shipped)** | Voice capture, photo OCR, edit/delete, per-person history, magic-link auth, calendar nudge framework, .ics URL fallback, **invite flow with one-tap magic link** | Establishes the core capture-recall loop and per-person data shape |
-| **v1.1 (shipped)** | **LinkedIn paste-and-enrich** — paste a URL or visible profile text; Gemini extracts structured fields and pre-fills the capture form | Captures the founder/sales wedge without becoming Dex; reduces capture friction further. URL fetch works for public profiles; pasted text is the universal fallback. |
+| **v1.1 (removed v1.7.1)** | ~~LinkedIn paste-and-enrich~~ — pulled in the Falcon-9 simplification pass. Voice + photo cover the social/community capture wedge cleanly; the LinkedIn fold added a third path that diluted the primary moment. The endpoint code is gone; if a sales-focused cohort surfaces, it returns as a separate paste-mode rather than a peer to voice. | Discipline preserved: "be the spark, not the warehouse" |
 | **v1.2** | iCloud Calendar via signed-in iOS Shortcut (workaround for Apple's API gap) | Closes the iCloud user gap that competitors can't close either |
 | **v1.3** | Relationship graph: "you met Dan via Sarah at the school" | Network effect on the data — irreproducible elsewhere |
 | **v2** | Native iOS app with EventKit, Apple Watch glance, real push notifications | Brings the app into the moment — fewer users miss the nudge |
