@@ -558,57 +558,11 @@ async function compressImage(file, maxDim, quality) {
   });
 }
 
-// ---------- LinkedIn enrich ----------
-
-const linkedinUrlInput = document.getElementById('linkedin-url');
-const linkedinTextInput = document.getElementById('linkedin-text');
-const linkedinStatus = document.getElementById('linkedin-status');
-
-document.getElementById('btn-enrich-linkedin').addEventListener('click', async () => {
-  const url = linkedinUrlInput.value.trim();
-  const text = linkedinTextInput.value.trim();
-  if (!url && !text) {
-    flash(linkedinStatus, 'Paste a LinkedIn URL or profile text first.', 'error');
-    return;
-  }
-  const btn = document.getElementById('btn-enrich-linkedin');
-  btn.disabled = true; btn.textContent = 'Reading...';
-  flash(linkedinStatus, 'Reading the profile...', 'loading');
-  try {
-    const r = await fetchAuth('/api/extract-linkedin', {
-      method: 'POST',
-      body: JSON.stringify({ url, text })
-    });
-    if (!r.ok) {
-      const errBody = await r.text();
-      try {
-        const errJson = JSON.parse(errBody);
-        if (errJson.error) throw new Error(errJson.error);
-      } catch {}
-      throw new Error(errBody);
-    }
-    const parsed = await r.json();
-
-    // Pre-fill the capture form. Append rather than overwrite so existing voice
-    // notes aren't lost.
-    if (parsed.summary) {
-      const existing = captureInput.value.trim();
-      captureInput.value = existing ? `${existing}\n\n${parsed.summary}` : parsed.summary;
-    }
-    if (parsed.where && !captureWhere.value.trim()) captureWhere.value = parsed.where;
-
-    flash(linkedinStatus, parsed.summary
-      ? `Got it: ${parsed.headline || (parsed.summary || '').slice(0, 80)}. Added below — tap Save when ready.`
-      : 'Read what I could (limited content). Add anything else by voice or text.',
-      'loading');
-  } catch (err) {
-    const f = friendlyError(err, "I couldn't read that profile. LinkedIn often blocks bots — try pasting the visible profile text instead.");
-    flash(linkedinStatus, f.text, 'error');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'Pull from LinkedIn';
-  }
-});
+// (LinkedIn paste flow removed in v1.7.1 — voice + photo + type cover the
+// core moment without the cognitive load of an additional capture path.
+// The /api/extract-linkedin endpoint was deleted too. If LinkedIn enrich
+// comes back as a power-user feature for a sales-rep wedge, the prompt
+// lives in git history; recreate the endpoint then.)
 
 function blobToBase64(blob) {
   return new Promise((resolve, reject) => {

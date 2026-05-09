@@ -10,7 +10,6 @@
 //   MODEL_EXTRACT     — for /api/extract
 //   MODEL_MATCH       — for /api/entries/match
 //   MODEL_PHOTO       — for /api/extract-photo (must be a vision-capable provider)
-//   MODEL_LINKEDIN    — for /api/extract-linkedin
 //   MODEL_CALENDAR    — for /api/calendar-scan event matching
 //   MODEL_DEFAULT     — fallback for any task without a specific override
 //
@@ -131,7 +130,6 @@ const DEFAULTS_BY_TASK = {
   photo:    'gemini,openai,xai',
   // text-only after HTML strip; Perplexity gets a slot here because the web-search
   // capability can backfill profile info when the URL was gated
-  linkedin: 'cerebras,gemini,perplexity,anthropic',
   // batch cron, latency-tolerant, prefer cheap+fast
   calendar: 'cerebras,gemini,deepseek',
   default:  'gemini'
