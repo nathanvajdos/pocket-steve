@@ -19,7 +19,12 @@
 
 import { sendEmail } from './_email.js';
 
-const RECIPIENT = 'Nathan.Vajdos@regis-energy.com';
+// Resend test mode (default sandbox domain onboarding@resend.dev) only
+// permits delivery to the account holder's verified email — vajdos@gmail.com.
+// To deliver to Nathan.Vajdos@regis-energy.com (work) Nathan would need to
+// verify a real domain at resend.com/domains and update RESEND_FROM_EMAIL.
+// Until then, route everything to the gmail.
+const RECIPIENT = 'vajdos@gmail.com';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
