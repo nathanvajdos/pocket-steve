@@ -800,7 +800,7 @@ btnBrief.addEventListener('click', async () => {
         <div class="brief-empty">
           <div class="brief-empty-icon" aria-hidden="true">·</div>
           <div class="brief-empty-headline">Nothing to bring to mind yet.</div>
-          <div class="brief-empty-body">Capture someone first — talk into the mic, snap a card, drop a LinkedIn URL. Steve starts working the moment you do.</div>
+          <div class="brief-empty-body">Capture someone first — talk into the mic or snap a card. Steve starts working the moment you do.</div>
           <button class="btn-primary" data-go="capture" style="margin-top:14px;">+ Just met someone</button>
         </div>
       `;
