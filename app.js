@@ -519,7 +519,8 @@ photoInput.addEventListener('change', async (e) => {
       ? `<strong>Got it:</strong> ${escapeHtml(parsed.headline || parsed.summary.slice(0, 80))}. Add a voice note below if you want, then save.`
       : `<strong>Read what I could.</strong> Add anything else by voice or text.`;
   } catch (err) {
-    photoPreview.innerHTML = `<div class="error">Photo read failed: ${escapeHtml(err.message || '')}</div>`;
+    const f = friendlyError(err, 'I couldn\'t read that photo. Try a clearer shot, or paste the text instead.');
+    photoPreview.innerHTML = `<div class="error">${escapeHtml(f.text)}</div>`;
   } finally {
     e.target.value = ''; // allow re-selecting the same file
   }
@@ -602,7 +603,8 @@ document.getElementById('btn-enrich-linkedin').addEventListener('click', async (
       : 'Read what I could (limited content). Add anything else by voice or text.',
       'loading');
   } catch (err) {
-    flash(linkedinStatus, 'Could not read that profile. ' + (err.message || 'Try pasting the visible text instead.'), 'error');
+    const f = friendlyError(err, "I couldn't read that profile. LinkedIn often blocks bots — try pasting the visible profile text instead.");
+    flash(linkedinStatus, f.text, 'error');
   } finally {
     btn.disabled = false;
     btn.textContent = 'Pull from LinkedIn';
@@ -697,16 +699,17 @@ btnSave.addEventListener('click', async () => {
       };
       promptCard.addEventListener('click', handle, { once: true });
       btnSave.disabled = false;
-      btnSave.textContent = 'Save & extract';
+      btnSave.textContent = 'Save to your memory';
       return;
     }
 
     // No match — save as new root entry.
     await finalizeSave(parsed, text, where, null);
   } catch (err) {
-    flash(captureResult, 'Hmm, something went wrong saving that. ' + (err.message || ''), 'error');
+    const f = friendlyError(err, "I couldn't save that. Try once more.");
+    flash(captureResult, f.text, 'error');
     btnSave.disabled = false;
-    btnSave.textContent = 'Save & extract';
+    btnSave.textContent = 'Save to your memory';
   }
 });
 
@@ -742,10 +745,11 @@ async function finalizeSave(parsed, text, where, parentId) {
     photoPreview.hidden = true;
     photoPreview.innerHTML = '';
   } catch (err) {
-    flash(captureResult, 'Could not save: ' + (err.message || ''), 'error');
+    const f = friendlyError(err, "I couldn't save that. Try once more.");
+    flash(captureResult, f.text, 'error');
   } finally {
     btnSave.disabled = false;
-    btnSave.textContent = 'Save & extract';
+    btnSave.textContent = 'Save to your memory';
   }
 }
 
@@ -891,10 +895,11 @@ btnBrief.addEventListener('click', async () => {
       briefResult.appendChild(card);
     });
   } catch (err) {
-    flash(briefResult, "Couldn't pull the briefing. " + (err.message || ''), 'error');
+    const f = friendlyError(err, "I couldn't bring them to mind right now.");
+    flash(briefResult, f.text, 'error');
   } finally {
     btnBrief.disabled = false;
-    btnBrief.textContent = 'Pull up the people';
+    btnBrief.textContent = 'Bring them to mind';
   }
 });
 
@@ -1310,6 +1315,39 @@ function flash(el, msg, kind) {
   if (!el) return;
   el.hidden = false;
   el.innerHTML = `<div class="${kind || 'loading'}">${escapeHtml(msg)}</div>`;
+}
+
+// Translate the technical errors that bubble out of fetch/Supabase/Gemini
+// calls into something a human standing in a parking lot can act on.
+// Detection is by string-matching the err.message; keep the patterns specific
+// so we don't false-friendly-ize a real bug. The full technical detail is
+// always logged to console for debugging.
+function friendlyError(err, fallback) {
+  const raw = String(err?.message || err || '');
+  console.warn('[steve] error:', raw);
+
+  if (/\b429\b|rate.?limit|quota|RESOURCE_EXHAUSTED/i.test(raw)) {
+    return { kind: 'transient', text: "I'm a little overloaded right now — give me 10 seconds and try again." };
+  }
+  if (/\b401\b|not authenticated|invalid.?token|jwt/i.test(raw)) {
+    return { kind: 'auth',      text: 'Your session expired. Refresh the page and you\'ll be back in.' };
+  }
+  if (/\b403\b|forbidden|permission/i.test(raw)) {
+    return { kind: 'auth',      text: "I can't reach that on your behalf. Try refreshing the page." };
+  }
+  if (/\b413\b|too large|413/i.test(raw)) {
+    return { kind: 'permanent', text: 'That file was too big. Try a smaller photo or a shorter memo.' };
+  }
+  if (/failed to fetch|network|offline|net::|ERR_INTERNET/i.test(raw)) {
+    return { kind: 'transient', text: "I can't reach the server. Check your connection, then try again." };
+  }
+  if (/non-?json|unexpected token|malformed/i.test(raw)) {
+    return { kind: 'transient', text: "Something glitched on my end. Try once more — I'll usually catch it on the second pass." };
+  }
+  if (/\b5\d\d\b|gateway|service unavailable/i.test(raw)) {
+    return { kind: 'transient', text: "The server hiccuped. Try again in a moment." };
+  }
+  return { kind: 'permanent', text: fallback || "Something didn't work. Try again, or refresh the page." };
 }
 
 function formatWhen(iso) {
