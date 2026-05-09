@@ -102,7 +102,8 @@ const KIMI = {
 };
 const PERPLEXITY = {
   // Perplexity's Sonar models include built-in web search — useful for tasks
-  // where current web context matters (LinkedIn enrichment, person research).
+  // where current web context matters (kept for future person-research use;
+  // not currently wired to any production task).
   label: 'perplexity',
   baseUrl: 'https://api.perplexity.ai',
   authEnv: 'PERPLEXITY_API_KEY',
@@ -128,8 +129,6 @@ const DEFAULTS_BY_TASK = {
   match:    'cerebras,groq,gemini,openai',
   // vision required; only providers with vision support
   photo:    'gemini,openai,xai',
-  // text-only after HTML strip; Perplexity gets a slot here because the web-search
-  // capability can backfill profile info when the URL was gated
   // batch cron, latency-tolerant, prefer cheap+fast
   calendar: 'cerebras,gemini,deepseek',
   default:  'gemini'

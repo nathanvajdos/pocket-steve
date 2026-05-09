@@ -149,7 +149,6 @@ Steve does not commit to a single language model. The codebase has a thin routin
 | `brief` (memory-trigger prose) | `anthropic,gemini` | The user-facing moment of truth. Claude writes warmer, more memorable prose. Falls back to Gemini if no Anthropic key. |
 | `match` (is this the same person?) | `gemini,openai` | Conservative judgment task; either provider works. |
 | `photo` (Vision OCR) | `gemini,openai` | Both providers are vision-capable. |
-| `linkedin` (URL/text → fields) | `gemini,anthropic` | Anthropic is good at parsing semi-structured profile prose. |
 | `calendar` (event ↔ entry matching, in cron) | Gemini | Latency-tolerant batch job; cheapest provider wins. |
 
 Routing is configurable per task via env vars (`MODEL_BRIEF=anthropic,gemini`), so quality vs. cost trade-offs can be tuned without code changes. New providers (Cerebras, Groq, DeepSeek, Mistral, on-device Apple Foundation Models) drop in as additional adapters.
@@ -166,7 +165,7 @@ The product is "a memory trigger for the people you meet," not "an app powered b
 Two epistemic standards govern this whitepaper:
 
 1. **Competitive differentiators are defended by peer-reviewed cognitive science**, not by founder intuition. Section 5 lists each differentiator alongside the specific psychological mechanism it implements and the original-source citation. If a future iteration cannot point to a defensible mechanism, it doesn't ship.
-2. **Model-level claims are defended by reproducible benchmarks**, not by vendor marketing. The benchmark harness at `scripts/benchmark.mjs` runs Steve's actual production tasks (extract, brief, match, linkedin, calendar) against every provider with an API key configured, captures latency + output validity, and writes a timestamped report to `docs/benchmarks/`. Anyone with the repo can reproduce a run and audit the routing decisions.
+2. **Model-level claims are defended by reproducible benchmarks**, not by vendor marketing. The benchmark harness at `scripts/benchmark.mjs` runs Steve's actual production tasks (extract, brief, match, photo, calendar) against every provider with an API key configured, captures latency + output validity, and writes a timestamped report to `docs/benchmarks/`. Anyone with the repo can reproduce a run and audit the routing decisions.
 
 The benchmark harness deliberately does **not** use an LLM-as-judge for quality grading — quality of memory-trigger prose is a human judgment, not a model judgment, and using a model to grade other models is a known source of self-reinforcing bias ([Zheng et al., 2023](https://arxiv.org/abs/2306.05685)). Latency and output validity (does the JSON parse? do the expected fields exist?) are machine-graded; qualitative output samples are written into the report for human side-by-side comparison.
 
