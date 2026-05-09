@@ -48,10 +48,13 @@ const DEFAULTS_BY_TASK = {
 export async function complete(opts) {
   const task = opts.task || 'default';
   const order = providerOrder(task);
+  const tried = [];
   let lastErr;
+
   for (const name of order) {
     if (!ADAPTERS[name]) continue;
     if (!HAS_KEY[name]()) continue;
+    tried.push(name);
     try {
       return await ADAPTERS[name](opts);
     } catch (err) {
@@ -59,7 +62,34 @@ export async function complete(opts) {
       console.warn(`[_models] task=${task} provider=${name} failed: ${err.message}. Trying next.`);
     }
   }
+
+  // Last-resort: if every available provider failed AND at least one error
+  // was a rate-limit (429), wait the suggested retry-after (capped) and try
+  // the providers again once. This handles bursts without leaking 502s up to
+  // users when no alternate provider key is configured.
+  if (tried.length && lastErr && /\b429\b/.test(String(lastErr.message))) {
+    const retryMs = Math.min(parseRetryAfterMs(lastErr.message) ?? 1500, 5000);
+    await sleep(retryMs);
+    for (const name of tried) {
+      try {
+        return await ADAPTERS[name](opts);
+      } catch (err) {
+        lastErr = err;
+      }
+    }
+  }
+
   throw lastErr || new Error(`No usable model provider for task=${task} (set GEMINI_API_KEY at minimum)`);
+}
+
+function parseRetryAfterMs(msg) {
+  const m = String(msg).match(/retry in ([\d.]+)\s*s/i);
+  if (m) return Math.ceil(parseFloat(m[1]) * 1000);
+  return null;
+}
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
 }
 
 function providerOrder(task) {
