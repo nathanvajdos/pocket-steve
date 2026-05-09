@@ -541,6 +541,33 @@ textarea:focus, input:focus {
 }
 .photo-status.loading { color: var(--muted); }
 
+/* ---- LinkedIn enrich fold ---- */
+
+.enrich-fold {
+  margin: 0 0 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.enrich-fold > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  -webkit-tap-highlight-color: transparent;
+}
+.enrich-fold > summary::-webkit-details-marker { display: none; }
+.enrich-fold[open] > summary {
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+.enrich-fold .enrich-body {
+  padding: 12px 16px 16px;
+}
+
 /* ---- mic button ---- */
 
 .mic-button {

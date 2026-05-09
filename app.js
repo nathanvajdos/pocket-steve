@@ -400,6 +400,58 @@ async function compressImage(file, maxDim, quality) {
   });
 }
 
+// ---------- LinkedIn enrich ----------
+
+const linkedinUrlInput = document.getElementById('linkedin-url');
+const linkedinTextInput = document.getElementById('linkedin-text');
+const linkedinStatus = document.getElementById('linkedin-status');
+
+document.getElementById('btn-enrich-linkedin').addEventListener('click', async () => {
+  const url = linkedinUrlInput.value.trim();
+  const text = linkedinTextInput.value.trim();
+  if (!url && !text) {
+    flash(linkedinStatus, 'Paste a LinkedIn URL or profile text first.', 'error');
+    return;
+  }
+  const btn = document.getElementById('btn-enrich-linkedin');
+  btn.disabled = true; btn.textContent = 'Reading...';
+  flash(linkedinStatus, 'Reading the profile...', 'loading');
+  try {
+    const r = await fetch('/api/extract-linkedin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url, text })
+    });
+    if (!r.ok) {
+      const errBody = await r.text();
+      try {
+        const errJson = JSON.parse(errBody);
+        if (errJson.error) throw new Error(errJson.error);
+      } catch {}
+      throw new Error(errBody);
+    }
+    const parsed = await r.json();
+
+    // Pre-fill the capture form. Append rather than overwrite so existing voice
+    // notes aren't lost.
+    if (parsed.summary) {
+      const existing = captureInput.value.trim();
+      captureInput.value = existing ? `${existing}\n\n${parsed.summary}` : parsed.summary;
+    }
+    if (parsed.where && !captureWhere.value.trim()) captureWhere.value = parsed.where;
+
+    flash(linkedinStatus, parsed.summary
+      ? `Got it: ${parsed.headline || (parsed.summary || '').slice(0, 80)}. Added below — tap Save when ready.`
+      : 'Read what I could (limited content). Add anything else by voice or text.',
+      'loading');
+  } catch (err) {
+    flash(linkedinStatus, 'Could not read that profile. ' + (err.message || 'Try pasting the visible text instead.'), 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Pull from LinkedIn';
+  }
+});
+
 function blobToBase64(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -794,7 +846,7 @@ document.getElementById('btn-connect-ms').addEventListener('click', async () => 
   const status = document.getElementById('settings-status');
   flash(status, 'Redirecting to Microsoft...', 'loading');
   try {
-    const r = await fetchAuth('/api/oauth/microsoft/start', { method: 'GET' });
+    const r = await fetchAuth('/api/oauth/microsoft?action=start', { method: 'GET' });
     if (!r.ok) throw new Error(await r.text());
     const { authorizeUrl } = await r.json();
     window.location.href = authorizeUrl;
@@ -850,7 +902,7 @@ document.getElementById('btn-disconnect-ms').addEventListener('click', async () 
   const status = document.getElementById('settings-status');
   flash(status, 'Disconnecting...', 'loading');
   try {
-    const r = await fetchAuth('/api/oauth/microsoft/disconnect', { method: 'POST' });
+    const r = await fetchAuth('/api/oauth/microsoft?action=disconnect', { method: 'POST' });
     if (!r.ok) throw new Error(await r.text());
     flash(status, 'Outlook disconnected.', 'loading');
     renderSettings();
