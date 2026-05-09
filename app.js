@@ -756,6 +756,13 @@ function renderCaptureResult(entry, mergedIntoExisting = false) {
     <button class="btn-tertiary" data-go="library">See everyone</button>
   `;
   captureResult.appendChild(actions);
+
+  // Bring the confirmation into view — Save sits above the optional
+  // details fold now, so the result card lands below the fold of the
+  // screen on most phones. Don't make the user hunt for it.
+  try {
+    captureResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (_) { /* older browsers — no-op */ }
 }
 
 // ---------- briefing flow ----------
