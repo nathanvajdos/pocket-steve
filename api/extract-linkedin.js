@@ -55,22 +55,36 @@ export default async function handler(req, res) {
     });
   }
 
-  const systemInstruction = `You extract structured details about a person from a snippet of web content (a LinkedIn profile, personal website, conference bio, or pasted text). The user wants to remember this person.
+  const systemInstruction = `You extract structured details about a person from a snippet of web content (a LinkedIn profile, personal website, conference bio, or pasted text). The output feeds a memory-trigger system, so EVERY FIELD is engineered to spark recall later — not to be a generic CRM record.
 
-Return ONLY valid JSON in this exact shape, no preamble:
+EXTRACTION RULES, in order of priority:
+
+1. LEAD WITH ATYPICAL DETAILS. The brain remembers what stands out (von Restorff). In the headline AND in traits, prefer distinctive observations ("ex-Stripe Staff Eng now at Series-A", "marathoner + dad of two", "Stanford CS '14 with a published novel") over generic ones ("experienced professional", "results-driven", "team player"). LinkedIn is full of generic boilerplate; ignore it.
+
+2. CAP TRAITS AT 4. Working memory holds about 4 chunks (Cowan, 2001). Pick the 4 most distinctive — typically: current role+company, one notable past, one distinctive personal/hobby thread, one location/origin if regional matters.
+
+3. NEVER INVENT. If only a current title is visible, traits include the title — not an inferred specialty. If the source is a login wall with no real data, return empty fields with a 'raw_text' note explaining what you saw.
+
+4. CAPTURE FOLLOW-UP THREADS. If the source reveals something the user could bring up next time — a current project, a recent move, a kid's milestone the user mentioned, a side hustle, a published talk — include it in the summary as a final clause. These are the next-handshake hooks the briefing endpoint will surface.
+
+5. STRIP THE LINKEDIN BULLSHIT. Phrases like "passionate about", "results-driven", "thought leader", "synergies", "10x", "rockstar", or any title-case buzzword soup belong in raw_text only — never in summary or traits.
+
+6. SECOND-PERSON, WARM, TERSE. "You met..." not "Subject is...". 2-3 sentences max in the summary.
+
+Return ONLY valid JSON in this exact shape, no preamble, no markdown fences:
 {
-  "headline": "Short label (8 words max), e.g. 'Ranbir Patel, VP Eng at Acme'",
-  "summary": "2-3 sentence second-person summary suitable as a memory trigger. Lead with name, current role + company. Mention notable past or distinctive details.",
-  "names": ["full name as found"],
+  "headline": "8 words max. Lead with the most distinctive concrete detail. e.g. 'Sarah Chen, ex-Stripe PM, now Director at Notion'.",
+  "summary": "2-3 sentences in second person. Lead with name + current role/company, one distinctive past or trait, end with a follow-up thread if any.",
+  "names": ["full name as it appears in the source"],
   "kids": [],
   "pets": [],
-  "traits": ["company, role, location, notable past, anything that helps remember them"],
-  "where": "Empty unless the snippet mentions a specific event/place where the user might have met them.",
+  "traits": ["max 4 distinctive entries — current role+company, notable past, distinctive personal thread, regional origin if relevant. Skip buzzwords."],
+  "where": "Empty unless the snippet specifies a real event/place the user might have met them at.",
   "linkedin_url": "If a LinkedIn URL was provided or visible in the content, return it. Otherwise empty string.",
-  "raw_text": "Verbatim key phrases extracted, comma-separated. Used as a fallback / source-of-truth audit trail."
+  "raw_text": "Verbatim key phrases extracted, comma-separated. Source-of-truth audit trail."
 }
 
-If a field has no info, use an empty string or empty array. Never invent details. If the content looks like a login wall or generic redirect (no real profile data), return mostly empty fields and put a note in raw_text.`;
+If a field has no info, use an empty string or empty array.`;
 
   const parts = [];
   if (fetched) {
@@ -89,7 +103,9 @@ If a field has no info, use an empty string or empty array. Never invent details
       user: parts,
       json: true,
       temperature: 0.2,
-      maxTokens: 900
+      // Bumped 900 -> 1500 to match the richer prompt; same truncation-502
+      // lineage as v1.5.2 (brief), v1.6.3 (extract), v1.6.4 (photo).
+      maxTokens: 1500
     });
     if (cleanUrl && !parsed.linkedin_url) parsed.linkedin_url = cleanUrl;
     if (fetchNote) parsed._fetchNote = fetchNote;
