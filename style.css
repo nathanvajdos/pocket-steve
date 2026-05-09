@@ -383,7 +383,10 @@ body {
 }
 
 .home-cta {
-  margin: 8px 0 32px;
+  margin: 8px 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 .btn-cta {
   display: flex;
@@ -407,6 +410,24 @@ body {
   opacity: 0.7;
   letter-spacing: 0;
 }
+
+/* Secondary CTA — same shape as primary (so the value loop is visually
+   symmetric: capture | recall) but lighter weight: white surface, subtle
+   border, no orange fill. This is how the user sees "how does it help me
+   next time" without reading anything. */
+.btn-cta-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  border-radius: var(--radius);
+  transition: transform .08s ease, border-color .15s, box-shadow .15s;
+}
+.btn-cta-secondary:active { transform: scale(0.99); }
+.btn-cta-secondary:hover { border-color: var(--accent); }
 
 .home-secondary {
   display: flex;
@@ -853,57 +874,55 @@ textarea:focus, input:focus {
   font-size: 14px;
 }
 
-/* ---- settings: connection cards ---- */
+/* ---- settings: calendar URL help fold ---- */
 
-.connection-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  margin-top: 12px;
-  margin-bottom: 16px;
+/* (.connection-card and .ics-fallback removed in v1.7.4 — the Microsoft
+   OAuth path required Azure App Registration that wasn't set up, so the
+   button perpetually failed. Reverted to a single universal calendar
+   method: paste a public .ics URL from any calendar system. Apple,
+   Google, Outlook, and any CalDAV calendar all support it.) */
+
+.ics-help {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 14px;
 }
-
-.connection-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
+.ics-help > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 8px 0;
+  font-size: 14px;
+  font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
 }
+.ics-help > summary::-webkit-details-marker { display: none; }
+.ics-help[open] > summary { color: var(--text); }
 
-.connection-logo {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: white;
-  border-radius: 8px;
-  flex-shrink: 0;
+.ics-help-body {
+  padding: 4px 0 8px;
 }
-
-.connection-meta { flex: 1; min-width: 0; }
-.connection-title {
+.ics-help-body p {
+  margin: 14px 0 4px;
+  color: var(--text);
+  font-size: 14px;
   font-weight: 600;
-  font-size: 15px;
 }
-.connection-sub {
+.ics-help-body p:first-child { margin-top: 6px; }
+.ics-help-body ol {
+  margin: 0 0 12px;
+  padding-left: 22px;
+  color: var(--muted);
+  line-height: 1.55;
+  font-size: 14px;
+}
+.ics-help-body li { margin-bottom: 2px; }
+.ics-help-body strong { color: var(--text); font-weight: 600; }
+.ics-help-body p:last-child {
+  margin-top: 18px;
+  font-weight: 400;
   color: var(--muted);
   font-size: 13px;
-  margin-top: 2px;
-}
-
-.ics-fallback {
-  margin-top: 8px;
-  color: var(--muted);
-}
-.ics-fallback summary {
-  cursor: pointer;
-  font-size: 14px;
-  padding: 8px 0;
-}
-.ics-fallback .ics-body {
-  margin-top: 8px;
+  line-height: 1.5;
 }
 
 /* ---- onboarding overlay ---- */

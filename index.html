@@ -96,10 +96,12 @@
           <span class="btn-cta-main">+ Just met someone</span>
           <span class="btn-cta-sub">Talk. I'll remember.</span>
         </button>
+        <button class="btn-cta btn-cta-secondary" data-go="brief">
+          <span class="btn-cta-main">Heading somewhere?</span>
+          <span class="btn-cta-sub">I'll bring back the people you've met there.</span>
+        </button>
       </div>
       <div class="home-secondary">
-        <button class="link-button" data-go="brief">Heading somewhere?</button>
-        <span class="link-sep">·</span>
         <button class="link-button" data-go="library">Everyone I've met</button>
         <span class="link-sep">·</span>
         <button class="link-button" data-go="settings">Settings</button>
@@ -247,52 +249,47 @@
         <div class="settings-section-label">Calendar nudges</div>
         <p class="settings-section-desc">When I see an upcoming event in your calendar that matches a place where you&rsquo;ve met someone, I&rsquo;ll email you the memory trigger 30 minutes before.</p>
 
-        <!-- Microsoft / Outlook one-click -->
-        <div id="ms-card" class="connection-card">
-          <div class="connection-header">
-            <div class="connection-logo" aria-hidden="true">
-              <svg viewBox="0 0 23 23" width="22" height="22"><rect x="1" y="1" width="10" height="10" fill="#f25022"/><rect x="12" y="1" width="10" height="10" fill="#7fba00"/><rect x="1" y="12" width="10" height="10" fill="#00a4ef"/><rect x="12" y="12" width="10" height="10" fill="#ffb900"/></svg>
-            </div>
-            <div class="connection-meta">
-              <div class="connection-title">Microsoft 365 / Outlook</div>
-              <div class="connection-sub" id="ms-sub">One-click. Read-only access to your calendar.</div>
-            </div>
-          </div>
-          <button class="btn-primary" id="btn-connect-ms">Connect Outlook</button>
-          <button class="btn-tertiary" id="btn-disconnect-ms" hidden>Disconnect</button>
-        </div>
+        <input id="settings-calendar-url" type="url" placeholder="Paste your calendar share URL" inputmode="url" autocomplete="off" />
+        <button class="btn-primary" id="btn-save-calendar" style="margin-top:10px;">Save calendar</button>
+        <div id="settings-status"></div>
 
-        <!-- iCloud / Google / other — fallback ICS paste -->
-        <details class="ics-fallback">
-          <summary>Or paste a calendar share URL (iCloud, Google, others)</summary>
-          <div class="ics-body">
-            <input id="settings-calendar-url" type="url" placeholder="https://p33-caldav.icloud.com/published/2/..." inputmode="url" />
-            <details style="margin-top:8px;color:var(--muted);font-size:14px;">
-              <summary>How to get a share URL — step by step</summary>
-              <div style="margin-top:8px;">
-                <p><strong>iCloud (iPhone):</strong></p>
-                <ol style="margin:6px 0 12px;padding-left:18px;">
-                  <li>Open the Calendar app on your iPhone</li>
-                  <li>Tap <strong>Calendars</strong> at the bottom</li>
-                  <li>Tap the <strong>(i)</strong> info icon next to the calendar you want me to watch</li>
-                  <li>Toggle <strong>Public Calendar</strong> ON (the URL is non-guessable; nobody can find it without you sending it)</li>
-                  <li>Tap <strong>Share Link</strong> &rarr; <strong>Copy</strong></li>
-                  <li>Come back here and paste below</li>
-                </ol>
-                <p><strong>Google Calendar (calendar.google.com):</strong></p>
-                <ol style="margin:6px 0 12px;padding-left:18px;">
-                  <li>Click the gear icon &rarr; <strong>Settings</strong></li>
-                  <li>Pick the calendar from the left rail &rarr; <strong>Integrate calendar</strong></li>
-                  <li>Copy <strong>Secret address in iCal format</strong></li>
-                </ol>
-                <p><strong>Outlook (without OAuth):</strong> The "Connect Outlook" button above is the better path — but if you want a URL: outlook.office.com &rarr; Settings &rarr; Calendar &rarr; Shared calendars &rarr; Publish a calendar &rarr; copy the ICS link.</p>
-              </div>
-            </details>
-            <button class="btn-primary" id="btn-save-calendar" style="margin-top:12px;">Save calendar URL</button>
+        <details class="ics-help">
+          <summary>How to get the URL from your calendar</summary>
+          <div class="ics-help-body">
+            <p><strong>Apple Calendar (iPhone)</strong></p>
+            <ol>
+              <li>Calendar app &rarr; tap <strong>Calendars</strong> at the bottom</li>
+              <li>Tap the <strong>(i)</strong> next to a calendar</li>
+              <li>Toggle <strong>Public Calendar</strong> on</li>
+              <li>Tap <strong>Share Link</strong>, then <strong>Copy</strong></li>
+            </ol>
+
+            <p><strong>Google Calendar</strong></p>
+            <ol>
+              <li>calendar.google.com &rarr; gear &rarr; <strong>Settings</strong></li>
+              <li>Pick the calendar &rarr; <strong>Integrate calendar</strong></li>
+              <li>Copy <strong>Secret address in iCal format</strong></li>
+            </ol>
+
+            <p><strong>Outlook / Microsoft 365</strong></p>
+            <ol>
+              <li>outlook.office.com &rarr; <strong>Settings</strong> &rarr; <strong>Calendar</strong></li>
+              <li><strong>Shared calendars</strong> &rarr; <strong>Publish a calendar</strong></li>
+              <li>Pick a calendar, choose &ldquo;Can view all details&rdquo;</li>
+              <li>Copy the <strong>ICS</strong> link (not the HTML one)</li>
+            </ol>
+
+            <p><strong>Privacy:</strong> the URL is non-guessable. Nobody can find it without you sending it. I check it once a day, never write to your calendar, never store events &mdash; only the matches I email you about.</p>
           </div>
         </details>
 
-        <div id="settings-status"></div>
+        <!-- Hidden controls preserved so an existing user with a Microsoft
+             connection from a previous deploy can still disconnect it.
+             The connect path is removed; OAuth requires Azure App
+             Registration that isn't set up. -->
+        <button class="btn-tertiary" id="btn-connect-ms" hidden>Connect Outlook</button>
+        <button class="btn-tertiary" id="btn-disconnect-ms" hidden>Disconnect Outlook</button>
+        <span id="ms-sub" hidden></span>
       </div>
 
       <div class="settings-section">
