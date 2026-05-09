@@ -36,7 +36,26 @@ const LEGACY_STORE_KEY = 'steve.entries.v1';
   if (session) {
     onSignedIn(session);
   } else {
-    showLogin();
+    // Try anonymous sign-in first — zero-friction entry. Anyone landing on
+    // the URL gets a working session immediately, no email entry, no second
+    // email round-trip. They can later "claim" the account by adding email
+    // in Settings, which preserves all their captured entries.
+    //
+    // Requires Anonymous Sign-Ins to be enabled in Supabase project settings
+    // (Authentication → Providers → Anonymous Sign-Ins → Enable). If disabled,
+    // this throws and we fall through to the magic-link login screen.
+    try {
+      const { data, error } = await supabase.auth.signInAnonymously();
+      if (error) throw error;
+      if (data?.session) {
+        onSignedIn(data.session);
+      } else {
+        showLogin();
+      }
+    } catch (err) {
+      console.info('[auth] anonymous sign-in unavailable, falling back to magic link:', err.message);
+      showLogin();
+    }
   }
 
   // Subscribe to auth changes so post-login redirects flow naturally.
@@ -1026,8 +1045,20 @@ async function renderSettings() {
   const msSub = document.getElementById('ms-sub');
   const btnConnect = document.getElementById('btn-connect-ms');
   const btnDisconnect = document.getElementById('btn-disconnect-ms');
+  const anonPill = document.getElementById('settings-anon-pill');
+  const claimBlock = document.getElementById('settings-claim');
 
-  emailEl.textContent = currentUser?.email || '—';
+  // Anonymous users don't have an email; show the claim/upgrade flow instead.
+  const isAnon = !!currentUser?.is_anonymous;
+  if (isAnon) {
+    emailEl.textContent = 'Anonymous account';
+    if (anonPill) anonPill.hidden = false;
+    if (claimBlock) claimBlock.hidden = false;
+  } else {
+    emailEl.textContent = currentUser?.email || '—';
+    if (anonPill) anonPill.hidden = true;
+    if (claimBlock) claimBlock.hidden = true;
+  }
   urlInput.value = '';
 
   // Surface OAuth callback flags from the URL (set by /api/oauth/microsoft/callback)
@@ -1111,6 +1142,37 @@ document.getElementById('btn-send-invite').addEventListener('click', async () =>
   } finally {
     btn.disabled = false;
     btn.textContent = 'Send sign-in link';
+  }
+});
+
+// Claim an anonymous account by attaching an email. Supabase's updateUser
+// preserves the user_id (and therefore all their entries) — they just gain
+// the ability to sign in on other devices via magic link to the same account.
+document.getElementById('btn-claim-account').addEventListener('click', async () => {
+  const status = document.getElementById('settings-claim-status');
+  const emailEl = document.getElementById('settings-claim-email');
+  const email = emailEl.value.trim();
+  if (!email || !/.+@.+\..+/.test(email)) {
+    status.textContent = 'Type a valid email first.';
+    status.style.color = 'var(--danger)';
+    return;
+  }
+  const btn = document.getElementById('btn-claim-account');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+  status.style.color = 'var(--muted)';
+  status.textContent = 'Saving...';
+  try {
+    const { error } = await supabase.auth.updateUser({ email });
+    if (error) throw error;
+    status.textContent = `Sent. Check ${email} and tap the confirmation link to lock it in. Until you do, you stay signed in here.`;
+    status.style.color = 'var(--text)';
+  } catch (err) {
+    status.style.color = 'var(--danger)';
+    status.textContent = 'Could not save: ' + (err.message || 'unknown error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save my account';
   }
 });
 

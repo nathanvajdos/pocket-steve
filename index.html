@@ -19,18 +19,23 @@
   <datalist id="places"></datalist>
   <main id="app">
 
-    <!-- Login screen — shown when no session -->
+    <!-- Login screen — fallback when anonymous sign-in is disabled -->
     <section id="view-login" class="view">
-      <header class="hero">
-        <h1>Steve</h1>
-        <p class="tag">Remember the people you meet.</p>
-      </header>
-      <p class="prompt-text">Enter your email. I'll send you a magic link — tap it to sign in.</p>
-      <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email" inputmode="email" />
-      <button class="btn-primary" id="btn-login">Send magic link</button>
-      <div id="login-status"></div>
-      <p class="hint" id="install-hint" hidden>
-        Tap <strong>Share</strong> &rarr; <strong>Add to Home Screen</strong> to use this like an app.
+      <div class="login-stage">
+        <header class="login-hero">
+          <h1>Steve.</h1>
+          <p class="login-tag">Remember the people you meet.</p>
+        </header>
+        <div class="login-form">
+          <p class="login-copy">One email. One link. You&rsquo;re in.</p>
+          <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email" inputmode="email" autocapitalize="off" autocorrect="off" />
+          <button class="btn-primary" id="btn-login">Send my sign-in link</button>
+          <div id="login-status"></div>
+          <p class="login-fineprint">No password. No account form. The link is the sign-in.</p>
+        </div>
+      </div>
+      <p class="hint login-install-hint" id="install-hint" hidden>
+        Tap <strong>Share</strong> &rarr; <strong>Add to Home Screen</strong> to use Steve like an app.
       </p>
     </section>
 
@@ -60,15 +65,22 @@
 
     <!-- Home screen — shown when signed in -->
     <section id="view-home" class="view">
-      <header class="hero">
-        <h1>Steve</h1>
-        <p class="tag">Remember the people you meet.</p>
+      <header class="home-hero">
+        <h1>Steve.</h1>
+        <p class="home-tag">Your memory, for the people you meet.</p>
       </header>
-      <div class="actions">
-        <button class="btn-primary" data-go="capture">+ Just met someone</button>
-        <button class="btn-secondary" data-go="brief">Heading somewhere?</button>
-        <button class="btn-tertiary" data-go="library">Everyone I've met</button>
-        <button class="btn-tertiary" data-go="settings">Settings</button>
+      <div class="home-cta">
+        <button class="btn-primary btn-cta" data-go="capture">
+          <span class="btn-cta-main">+ Just met someone</span>
+          <span class="btn-cta-sub">Talk. I'll remember.</span>
+        </button>
+      </div>
+      <div class="home-secondary">
+        <button class="link-button" data-go="brief">Heading somewhere?</button>
+        <span class="link-sep">·</span>
+        <button class="link-button" data-go="library">Everyone I've met</button>
+        <span class="link-sep">·</span>
+        <button class="link-button" data-go="settings">Settings</button>
       </div>
       <div id="home-status"></div>
       <section id="top-of-mind" class="top-of-mind" hidden>
@@ -274,8 +286,17 @@
 
       <div class="row" style="margin-top:32px;">
         <label>Account</label>
-        <p class="prompt-text"><span id="settings-email" style="color:var(--text);">—</span></p>
-        <button class="btn-tertiary" id="btn-logout">Sign out</button>
+        <p class="prompt-text">
+          <span id="settings-email" style="color:var(--text);">—</span>
+          <span id="settings-anon-pill" hidden style="display:inline-block;background:rgba(255,184,77,0.15);color:var(--accent);border:1px solid rgba(255,184,77,0.4);border-radius:999px;padding:2px 8px;font-size:11px;margin-left:6px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">anon</span>
+        </p>
+        <div id="settings-claim" hidden>
+          <p class="prompt-text" style="margin-bottom:10px;">Anonymous account &mdash; your data lives on this device. <strong>Add your email</strong> to sync across devices and never lose your captures.</p>
+          <input id="settings-claim-email" type="email" placeholder="you@example.com" autocomplete="email" inputmode="email" autocapitalize="off" autocorrect="off" />
+          <button class="btn-primary" id="btn-claim-account" style="margin-top:8px;">Save my account</button>
+          <p id="settings-claim-status" class="prompt-text" style="margin-top:8px;font-size:13px;"></p>
+        </div>
+        <button class="btn-tertiary" id="btn-logout" style="margin-top:14px;">Sign out</button>
       </div>
     </section>
 
