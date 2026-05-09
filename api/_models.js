@@ -24,22 +24,24 @@
 const ADAPTERS = {
   gemini: geminiComplete,
   anthropic: anthropicComplete,
-  openai: openaiComplete
+  openai: openaiComplete,
+  cerebras: cerebrasComplete
 };
 
 const HAS_KEY = {
   gemini: () => !!process.env.GEMINI_API_KEY,
   anthropic: () => !!process.env.ANTHROPIC_API_KEY,
-  openai: () => !!process.env.OPENAI_API_KEY
+  openai: () => !!process.env.OPENAI_API_KEY,
+  cerebras: () => !!process.env.CEREBRAS_API_KEY
 };
 
 const DEFAULTS_BY_TASK = {
-  brief: 'anthropic,gemini',     // user-facing prose: Claude if available
-  extract: 'gemini',             // high-volume: keep cheap/fast
-  match: 'gemini,openai',
-  photo: 'gemini,openai',
-  linkedin: 'gemini,anthropic',
-  calendar: 'gemini',
+  brief: 'anthropic,gemini',                 // user-facing prose: Claude if available
+  extract: 'cerebras,gemini',                // high-volume + text-only: fast Llama wins when free
+  match: 'cerebras,gemini,openai',           // judgment task; text-only — pick fast
+  photo: 'gemini,openai',                    // vision required; Cerebras has no vision today
+  linkedin: 'cerebras,gemini,anthropic',     // text-only after HTML strip
+  calendar: 'cerebras,gemini',               // batch cron, latency-tolerant but free fast > free slow
   default: 'gemini'
 };
 
@@ -186,6 +188,43 @@ async function openaiComplete({ system, user, json, temperature = 0.2, maxTokens
     body: JSON.stringify(body)
   });
   if (!r.ok) throw new Error(`openai ${r.status}: ${await r.text()}`);
+  const data = await r.json();
+  const text = data.choices?.[0]?.message?.content || '';
+  return json ? safeJson(text) : text;
+}
+
+// ----- Cerebras (Llama on Cerebras CS-3 — fastest free-tier inference) -----
+//
+// OpenAI-compatible chat API. No vision support today (text-only). Perfect
+// for the high-volume `extract` and `match` tasks where latency dominates.
+// Default model: llama-3.3-70b (best free quality). Override with `model`.
+
+async function cerebrasComplete({ system, user, json, temperature = 0.2, maxTokens = 800, model = 'llama-3.3-70b' }) {
+  const apiKey = process.env.CEREBRAS_API_KEY;
+  if (Array.isArray(user)) {
+    // Cerebras text-only — strip image parts and concatenate text.
+    user = user.filter(p => p.text).map(p => p.text).join('\n\n');
+    if (!user) throw new Error('cerebras: no text content (vision not supported)');
+  }
+  const body = {
+    model,
+    messages: [
+      { role: 'system', content: system },
+      { role: 'user', content: user }
+    ],
+    temperature,
+    max_tokens: maxTokens,
+    ...(json ? { response_format: { type: 'json_object' } } : {})
+  };
+  const r = await fetch('https://api.cerebras.ai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error(`cerebras ${r.status}: ${await r.text()}`);
   const data = await r.json();
   const text = data.choices?.[0]?.message?.content || '';
   return json ? safeJson(text) : text;
