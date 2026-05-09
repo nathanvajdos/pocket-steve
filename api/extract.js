@@ -3,6 +3,7 @@
 // via env vars (see _models.js docstring). Default is Gemini 2.5 Flash.
 
 import { complete } from './_models.js';
+import { requireUser } from './_supabase.js';
 
 const SYSTEM = `You extract structured details from a person's quick voice memo about people they just met. The output feeds a memory-trigger system, so EVERY FIELD is engineered to spark the user's recall later — not to be a generic CRM record.
 
@@ -35,6 +36,12 @@ If a field has no info, use an empty string or empty array. Be terse.`;
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+
+  // Auth gate: this endpoint calls a paid LLM — require a Supabase session
+  // so anonymous traffic can't drain the quota. Anonymous-auth users still
+  // pass; only fully unauthenticated traffic is blocked.
+  const auth = await requireUser(req, res);
+  if (!auth) return;
 
   const { text, where } = req.body || {};
   if (!text || typeof text !== 'string') {

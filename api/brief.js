@@ -6,6 +6,7 @@
 // with Gemini as a free-tier fallback. Override via MODEL_BRIEF env var.
 
 import { complete } from './_models.js';
+import { requireUser } from './_supabase.js';
 
 const SYSTEM = `You write memory-trigger briefings for someone walking into an event. Each briefing has one job: spark their existing memory of a person, fast.
 
@@ -34,6 +35,11 @@ Return ONLY valid JSON in this shape, no preamble, no markdown fences:
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+
+  // Auth gate: paid LLM call. Anonymous Supabase sessions still pass;
+  // only fully unauthenticated traffic is blocked. Closes the cost vector.
+  const auth = await requireUser(req, res);
+  if (!auth) return;
 
   const { where, entries } = req.body || {};
   if (!where || !Array.isArray(entries)) {

@@ -489,9 +489,8 @@ photoInput.addEventListener('change', async (e) => {
     `;
 
     const base64 = await blobToBase64(compressed.blob);
-    const r = await fetch('/api/extract-photo', {
+    const r = await fetchAuth('/api/extract-photo', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         imageBase64: base64,
         mimeType: compressed.mimeType,
@@ -575,9 +574,8 @@ document.getElementById('btn-enrich-linkedin').addEventListener('click', async (
   btn.disabled = true; btn.textContent = 'Reading...';
   flash(linkedinStatus, 'Reading the profile...', 'loading');
   try {
-    const r = await fetch('/api/extract-linkedin', {
+    const r = await fetchAuth('/api/extract-linkedin', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url, text })
     });
     if (!r.ok) {
@@ -635,10 +633,10 @@ btnSave.addEventListener('click', async () => {
   captureResult.innerHTML = '<div class="loading">Pulling out the details...</div>';
 
   try {
-    // 1. Extract structured details via Gemini
-    const ext = await fetch('/api/extract', {
+    // 1. Extract structured details via Gemini (auth-gated as of v1.6.13
+    //    — paid LLM call, anonymous Supabase sessions still pass)
+    const ext = await fetchAuth('/api/extract', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, where })
     });
     if (!ext.ok) throw new Error(await ext.text());
@@ -857,9 +855,8 @@ btnBrief.addEventListener('click', async () => {
       createdAt: e.created_at
     }));
 
-    const b = await fetch('/api/brief', {
+    const b = await fetchAuth('/api/brief', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ where, entries: compact })
     });
     if (!b.ok) throw new Error(await b.text());

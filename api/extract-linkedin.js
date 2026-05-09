@@ -6,6 +6,7 @@
 // included in the prompt (URL fetch as primary, text as fallback/extra).
 
 import { complete } from './_models.js';
+import { requireUser } from './_supabase.js';
 
 const FETCH_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
@@ -18,6 +19,11 @@ const MAX_FETCH_BYTES = 800_000; // cap on remote HTML size
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+
+  // Auth gate: paid LLM + URL fetch. Anonymous Supabase sessions pass; only
+  // fully unauthenticated traffic is blocked. Closes the cost vector.
+  const auth = await requireUser(req, res);
+  if (!auth) return;
 
   const { url, text } = req.body || {};
   const cleanUrl = (url || '').toString().trim();

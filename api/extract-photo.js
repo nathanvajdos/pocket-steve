@@ -3,6 +3,7 @@
 // can handle this. Default routing: MODEL_PHOTO=gemini,openai.
 
 import { complete } from './_models.js';
+import { requireUser } from './_supabase.js';
 
 const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
 
@@ -38,6 +39,11 @@ If a field has no info, use an empty string or empty array. If the image is unre
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+
+  // Auth gate: paid Vision call. Anonymous Supabase sessions pass; only
+  // fully unauthenticated traffic is blocked. Closes the cost vector.
+  const auth = await requireUser(req, res);
+  if (!auth) return;
 
   const { imageBase64, mimeType, text } = req.body || {};
   if (!imageBase64 || typeof imageBase64 !== 'string') {
