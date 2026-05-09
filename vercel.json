@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "headers": [
+    {
+      "source": "/service-worker.js",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+    },
+    {
+      "source": "/manifest.json",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/calendar-scan",
+      "schedule": "0 13 * * *"
+    }
+  ]
+}

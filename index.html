@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Pocket Steve" />
+  <meta name="theme-color" content="#0b0b0f" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icons/icon.svg" />
+  <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+  <title>Pocket Steve</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main id="app">
+
+    <!-- Login screen — shown when no session -->
+    <section id="view-login" class="view">
+      <header class="hero">
+        <h1>Pocket Steve</h1>
+        <p class="tag">Remember the people you meet.</p>
+      </header>
+      <p class="prompt-text">Enter your email. I'll send you a magic link — tap it to sign in.</p>
+      <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email" inputmode="email" />
+      <button class="btn-primary" id="btn-login">Send magic link</button>
+      <div id="login-status"></div>
+      <p class="hint" id="install-hint" hidden>
+        Tap <strong>Share</strong> &rarr; <strong>Add to Home Screen</strong> to use this like an app.
+      </p>
+    </section>
+
+    <!-- Onboarding overlay — shown to new users, dismissible -->
+    <section id="view-onboarding" class="view onboarding-overlay">
+      <div class="onboard-stage" data-step="1">
+        <div class="onboard-emoji">👋</div>
+        <h2>Welcome to Pocket Steve.</h2>
+        <p>Talk to me about anyone you meet — names, kids, pets, where, anything that stuck out. I'll keep it for you.</p>
+        <button class="btn-primary" data-onboard="next">Show me how →</button>
+      </div>
+      <div class="onboard-stage" data-step="2" hidden>
+        <div class="onboard-emoji">🎙️</div>
+        <h2>Tap. Talk. Done.</h2>
+        <p>One button captures everything. No forms, no fields. Just say it the way you'd tell a friend in the car: <em>"Met a couple at the school carnival, dog Otis, kid Malachi, from California, all tatted up."</em></p>
+        <button class="btn-primary" data-onboard="next">What about later? →</button>
+      </div>
+      <div class="onboard-stage" data-step="3" hidden>
+        <div class="onboard-emoji">🧠</div>
+        <h2>I'll remember when you don't.</h2>
+        <p>Heading back somewhere? Tell me the place — I'll surface the people you've met there with a quick memory trigger before you walk in.</p>
+        <p class="prompt-text" style="margin-top:18px;">Optional: drop your calendar share URL in Settings later, and I'll email you a heads-up before any event with people you'd want to remember.</p>
+        <button class="btn-primary" data-onboard="finish">Let's go →</button>
+      </div>
+      <button class="onboard-skip" data-onboard="finish">Skip</button>
+    </section>
+
+    <!-- Home screen — shown when signed in -->
+    <section id="view-home" class="view">
+      <header class="hero">
+        <h1>Pocket Steve</h1>
+        <p class="tag">Remember the people you meet.</p>
+      </header>
+      <div class="actions">
+        <button class="btn-primary" data-go="capture">+ Just met someone</button>
+        <button class="btn-secondary" data-go="brief">Heading somewhere?</button>
+        <button class="btn-tertiary" data-go="library">Everyone I've met</button>
+        <button class="btn-tertiary" data-go="settings">Settings</button>
+      </div>
+      <div id="home-status"></div>
+      <div id="home-install-hint" class="install-hint" hidden>
+        <div class="install-hint-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </div>
+        <div>
+          <div class="install-hint-title">Add Pocket Steve to your home screen</div>
+          <div class="install-hint-body">In Safari, tap <strong>Share</strong> &rarr; <strong>Add to Home Screen</strong>. Now it's a real app icon, opens in one tap, works offline.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Capture screen -->
+    <section id="view-capture" class="view">
+      <header class="bar">
+        <button class="back" data-go="home">&larr;</button>
+        <h2>Just met someone</h2>
+      </header>
+      <p class="prompt-text" id="capture-hint">
+        Tap the big mic button and just talk. Names, kids, pets, where you met, anything you noticed.
+      </p>
+      <div class="capture-actions">
+        <button class="mic-button" id="btn-mic" type="button" aria-label="Tap to record">
+          <span class="mic-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+          </span>
+          <span class="mic-label" id="mic-label">Tap to talk</span>
+          <span class="mic-pulse" aria-hidden="true"></span>
+        </button>
+        <label class="cam-button" for="capture-photo-input">
+          <span class="cam-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+          </span>
+          <span>Snap a card or name tag</span>
+        </label>
+        <input id="capture-photo-input" type="file" accept="image/*" capture="environment" hidden />
+      </div>
+      <div id="photo-preview" hidden></div>
+      <textarea id="capture-input" rows="5" placeholder="...or type. Met a couple at the school carnival. Dog named Otis, kid Malachi, from California, all tatted up..."></textarea>
+      <div class="row">
+        <label>Where did this happen?</label>
+        <input id="capture-where" type="text" placeholder="e.g. Elementary School Carnival" />
+      </div>
+      <div class="row">
+        <label>When might you see them next? <span style="opacity:.5;">(optional but helps the nudge)</span></label>
+        <input id="capture-next-at" type="datetime-local" />
+        <input id="capture-next-where" type="text" placeholder="Same place, or different?" style="margin-top:6px;" />
+      </div>
+      <button class="btn-primary" id="btn-save">Save & extract</button>
+      <div id="capture-result" hidden></div>
+    </section>
+
+    <!-- Briefing screen -->
+    <section id="view-brief" class="view">
+      <header class="bar">
+        <button class="back" data-go="home">&larr;</button>
+        <h2>Heading somewhere?</h2>
+      </header>
+      <p class="prompt-text">Type the place or event. I'll pull up the people you've met there.</p>
+      <input id="brief-where" type="text" placeholder="e.g. Elementary School" />
+      <button class="btn-primary" id="btn-brief">Pull up the people</button>
+      <div id="brief-result"></div>
+    </section>
+
+    <!-- Library screen -->
+    <section id="view-library" class="view">
+      <header class="bar">
+        <button class="back" data-go="home">&larr;</button>
+        <h2>Everyone I've met</h2>
+      </header>
+      <div id="library-list"></div>
+    </section>
+
+    <!-- Settings screen -->
+    <section id="view-settings" class="view">
+      <header class="bar">
+        <button class="back" data-go="home">&larr;</button>
+        <h2>Settings</h2>
+      </header>
+
+      <div class="row">
+        <label>Calendar nudges</label>
+        <p class="prompt-text">When I see an upcoming event in your calendar that matches a place where you've met someone, I'll email you the memory trigger 30 minutes before.</p>
+
+        <!-- Microsoft / Outlook one-click -->
+        <div id="ms-card" class="connection-card">
+          <div class="connection-header">
+            <div class="connection-logo" aria-hidden="true">
+              <svg viewBox="0 0 23 23" width="22" height="22"><rect x="1" y="1" width="10" height="10" fill="#f25022"/><rect x="12" y="1" width="10" height="10" fill="#7fba00"/><rect x="1" y="12" width="10" height="10" fill="#00a4ef"/><rect x="12" y="12" width="10" height="10" fill="#ffb900"/></svg>
+            </div>
+            <div class="connection-meta">
+              <div class="connection-title">Microsoft 365 / Outlook</div>
+              <div class="connection-sub" id="ms-sub">One-click. Read-only access to your calendar.</div>
+            </div>
+          </div>
+          <button class="btn-primary" id="btn-connect-ms">Connect Outlook</button>
+          <button class="btn-tertiary" id="btn-disconnect-ms" hidden>Disconnect</button>
+        </div>
+
+        <!-- iCloud / Google / other — fallback ICS paste -->
+        <details class="ics-fallback">
+          <summary>Or paste a calendar share URL (iCloud, Google, others)</summary>
+          <div class="ics-body">
+            <input id="settings-calendar-url" type="url" placeholder="https://p33-caldav.icloud.com/published/2/..." inputmode="url" />
+            <details style="margin-top:8px;color:var(--muted);font-size:14px;">
+              <summary>How to get a share URL — step by step</summary>
+              <div style="margin-top:8px;">
+                <p><strong>iCloud (iPhone):</strong></p>
+                <ol style="margin:6px 0 12px;padding-left:18px;">
+                  <li>Open the Calendar app on your iPhone</li>
+                  <li>Tap <strong>Calendars</strong> at the bottom</li>
+                  <li>Tap the <strong>(i)</strong> info icon next to the calendar you want me to watch</li>
+                  <li>Toggle <strong>Public Calendar</strong> ON (the URL is non-guessable; nobody can find it without you sending it)</li>
+                  <li>Tap <strong>Share Link</strong> &rarr; <strong>Copy</strong></li>
+                  <li>Come back here and paste below</li>
+                </ol>
+                <p><strong>Google Calendar (calendar.google.com):</strong></p>
+                <ol style="margin:6px 0 12px;padding-left:18px;">
+                  <li>Click the gear icon &rarr; <strong>Settings</strong></li>
+                  <li>Pick the calendar from the left rail &rarr; <strong>Integrate calendar</strong></li>
+                  <li>Copy <strong>Secret address in iCal format</strong></li>
+                </ol>
+                <p><strong>Outlook (without OAuth):</strong> The "Connect Outlook" button above is the better path — but if you want a URL: outlook.office.com &rarr; Settings &rarr; Calendar &rarr; Shared calendars &rarr; Publish a calendar &rarr; copy the ICS link.</p>
+              </div>
+            </details>
+            <button class="btn-primary" id="btn-save-calendar" style="margin-top:12px;">Save calendar URL</button>
+          </div>
+        </details>
+
+        <div id="settings-status"></div>
+      </div>
+
+      <div class="row" style="margin-top:32px;">
+        <label>Invite someone to Pocket Steve</label>
+        <p class="prompt-text">Send a friend a one-tap sign-in link. They click it and they're in &mdash; no password, no signup form.</p>
+        <input id="invite-email" type="email" placeholder="friend@example.com" autocomplete="off" inputmode="email" />
+        <input id="invite-name" type="text" placeholder="Their first name (optional)" autocomplete="off" style="margin-top:6px;" />
+        <textarea id="invite-message" rows="2" placeholder="Optional note (&quot;Steve, this is the app from the parking lot.&quot;)" style="margin-top:6px;"></textarea>
+        <button class="btn-primary" id="btn-send-invite" style="margin-top:10px;">Send sign-in link</button>
+        <div id="invite-status"></div>
+      </div>
+
+      <div class="row" style="margin-top:32px;">
+        <label>Account</label>
+        <p class="prompt-text"><span id="settings-email" style="color:var(--text);">—</span></p>
+        <button class="btn-tertiary" id="btn-logout">Sign out</button>
+      </div>
+    </section>
+
+  </main>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "pocket-steve",
+  "version": "0.2.1",
+  "description": "Pocket Steve — memory trigger for the people you meet.",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0"
+  }
+}
