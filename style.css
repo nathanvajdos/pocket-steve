@@ -61,6 +61,88 @@ body {
   font-size: 17px;
 }
 
+/* ---- Library hero + quieter card chrome ---- */
+
+.library-hero {
+  margin: 4px 0 18px;
+}
+.library-h {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+.library-tag {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-weight: 500;
+  min-height: 1em;
+}
+
+/* When library cards are inside the library list, dial back chrome:
+   no harsh borders, lighter background, more breathing room.
+   Capture-result and brief-result cards keep the brighter look since
+   they're momentary callouts, not a list. */
+#library-list .card {
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  padding: 18px 4px 16px;
+}
+#library-list .card:last-child {
+  border-bottom: 0;
+}
+#library-list .card .where {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+#library-list .card h3 {
+  font-size: 18px;
+  margin: 4px 0 8px;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+#library-list .card .summary {
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.5;
+}
+#library-list .card .meta {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+#library-list .card .actions-row {
+  margin-top: 12px;
+  gap: 6px;
+}
+#library-list .card .actions-row .chip {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 6px 11px;
+  font-size: 12px;
+  font-weight: 500;
+}
+#library-list .card .actions-row .chip:active {
+  color: var(--text);
+}
+#library-list .card .actions-row .chip-danger {
+  border-color: rgba(255, 93, 93, 0.25);
+  color: var(--danger);
+  opacity: 0.75;
+}
+#library-list .card .note-badge {
+  font-size: 10px;
+  padding: 1px 7px;
+  letter-spacing: 0.05em;
+}
+
 /* ---- Brief screen (Ive feel — symmetric with the capture moment) ---- */
 
 .brief-hero {

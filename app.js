@@ -892,14 +892,33 @@ btnBrief.addEventListener('click', async () => {
 
 async function renderLibrary() {
   const list = document.getElementById('library-list');
+  const tag = document.getElementById('library-tag');
   list.innerHTML = '<div class="loading">Loading...</div>';
+  if (tag) tag.innerHTML = '&nbsp;';
   const r = await fetchAuth('/api/entries', { method: 'GET' });
   if (!r.ok) { list.innerHTML = '<div class="error">Could not load.</div>'; return; }
   const { entries } = await r.json();
   refreshPlacesDatalist(entries);
   if (!entries.length) {
-    list.innerHTML = '<div class="empty">No one saved yet.</div>';
+    list.innerHTML = `
+      <div class="brief-empty">
+        <div class="brief-empty-icon" aria-hidden="true">·</div>
+        <div class="brief-empty-headline">Nobody yet.</div>
+        <div class="brief-empty-body">After your first capture, this is where every person you&rsquo;ve met lives. Lighter than a contact list. Closer to a memory.</div>
+        <button class="btn-primary" data-go="capture" style="margin-top:14px;">+ Just met someone</button>
+      </div>
+    `;
     return;
+  }
+  if (tag) {
+    const totalNotes = entries.reduce((sum, e) => sum + (e.note_count || 0), 0);
+    const peopleLabel = entries.length === 1 ? 'person' : 'people';
+    let line = `${entries.length} ${peopleLabel} remembered`;
+    if (totalNotes) {
+      const noteLabel = totalNotes === 1 ? 'follow-up note' : 'follow-up notes';
+      line += ` · ${totalNotes} ${noteLabel}`;
+    }
+    tag.textContent = line;
   }
   list.innerHTML = '';
   entries.forEach(e => list.appendChild(entryCard(e)));
