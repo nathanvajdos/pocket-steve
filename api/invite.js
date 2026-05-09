@@ -29,7 +29,10 @@ export default async function handler(req, res) {
   if (!auth) return;
   const inviter = auth.user;
 
-  const { email, name, message } = req.body || {};
+  // The UI is email-only. We accept (and ignore) `name`/`message` from any
+  // stale cached clients — the personal note now happens in the user's mail
+  // app, where they edit the prefilled body before sending.
+  const { email } = req.body || {};
   if (!email || typeof email !== 'string') {
     return res.status(400).json({ error: 'email required' });
   }
@@ -37,8 +40,6 @@ export default async function handler(req, res) {
   if (!/.+@.+\..+/.test(cleanEmail)) {
     return res.status(400).json({ error: 'invalid email format' });
   }
-  const cleanName = (name || '').toString().trim();
-  const cleanMessage = (message || '').toString().trim();
 
   try {
     const supa = serviceClient();
@@ -53,14 +54,13 @@ export default async function handler(req, res) {
     if (!actionLink) throw new Error('No action link returned by Supabase');
 
     const inviterName = friendlyInviter(inviter);
-    const recipientFirstName = cleanName || cleanEmail.split('@')[0];
+    const recipientFirstName = cleanEmail.split('@')[0];
 
     const subject = `${inviterName} invited you to Steve`;
     const body = buildPlainTextBody({
       inviterName,
       recipientFirstName,
-      actionLink,
-      personalNote: cleanMessage
+      actionLink
     });
 
     return res.status(200).json({
@@ -75,11 +75,10 @@ export default async function handler(req, res) {
   }
 }
 
-function buildPlainTextBody({ inviterName, recipientFirstName, actionLink, personalNote }) {
-  const note = personalNote ? `${personalNote}\n\n` : '';
+function buildPlainTextBody({ inviterName, recipientFirstName, actionLink }) {
   return `Hi ${recipientFirstName},
 
-${note}Try Steve — a little memory app for the people you meet.
+Try Steve — a little memory app for the people you meet.
 
 Open this email on your iPhone and tap the link below to sign in instantly (no password):
 

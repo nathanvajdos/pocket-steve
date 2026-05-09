@@ -1128,8 +1128,6 @@ document.getElementById('btn-connect-ms').addEventListener('click', async () => 
 document.getElementById('btn-send-invite').addEventListener('click', async () => {
   const status = document.getElementById('invite-status');
   const emailEl = document.getElementById('invite-email');
-  const nameEl = document.getElementById('invite-name');
-  const messageEl = document.getElementById('invite-message');
   const email = emailEl.value.trim();
   if (!email) { flash(status, 'Type their email first.', 'error'); return; }
   if (!/.+@.+\..+/.test(email)) { flash(status, "That doesn't look like a valid email.", 'error'); return; }
@@ -1140,11 +1138,7 @@ document.getElementById('btn-send-invite').addEventListener('click', async () =>
   try {
     const r = await fetchAuth('/api/invite', {
       method: 'POST',
-      body: JSON.stringify({
-        email,
-        name: nameEl.value.trim(),
-        message: messageEl.value.trim()
-      })
+      body: JSON.stringify({ email })
     });
     if (!r.ok) throw new Error(await r.text());
     const { recipientEmail, subject, body } = await r.json();
@@ -1157,8 +1151,6 @@ document.getElementById('btn-send-invite').addEventListener('click', async () =>
 
     flash(status, `Your mail app should have opened with the email pre-written. Just hit send. ${recipientEmail} will get a one-tap sign-in link.`, 'loading');
     emailEl.value = '';
-    nameEl.value = '';
-    messageEl.value = '';
   } catch (err) {
     const f = friendlyError(err, "I couldn't generate a sign-in link for that email. Try again.");
     flash(status, f.text, 'error');
