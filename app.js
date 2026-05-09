@@ -296,7 +296,8 @@ document.getElementById('btn-login').addEventListener('click', async () => {
       'Check your inbox. Tap the link in the email — it\'ll send you back here signed in.',
       'loading');
   } catch (err) {
-    flash(document.getElementById('login-status'), err.message || 'Could not send link.', 'error');
+    const f = friendlyError(err, "I couldn't send a sign-in link to that email. Try again, or check the address.");
+    flash(document.getElementById('login-status'), f.text, 'error');
   } finally {
     btn.disabled = false; btn.textContent = 'Send magic link';
   }
@@ -993,7 +994,8 @@ async function loadTimeline(div, entry, btn) {
     tl.hidden = false;
     btn.textContent = 'Hide timeline';
   } catch (err) {
-    tl.innerHTML = `<div class="error">Could not load timeline: ${escapeHtml(err.message || '')}</div>`;
+    const f = friendlyError(err, "I couldn't load the timeline for this person.");
+    tl.innerHTML = `<div class="error">${escapeHtml(f.text)}</div>`;
     tl.hidden = false;
     btn.textContent = 'Hide timeline';
   }
@@ -1040,7 +1042,8 @@ async function saveCardEdit(div, entry) {
     const { entry: updated } = await r.json();
     renderCardView(div, updated);
   } catch (err) {
-    status.innerHTML = `<div class="error">Save failed: ${escapeHtml(err.message || '')}</div>`;
+    const f = friendlyError(err, "I couldn't save those changes. Try again.");
+    status.innerHTML = `<div class="error">${escapeHtml(f.text)}</div>`;
   }
 }
 
@@ -1054,7 +1057,8 @@ async function deleteEntry(div, entry) {
     div.style.transform = 'scale(0.98)';
     setTimeout(() => div.remove(), 200);
   } catch (err) {
-    alert('Delete failed: ' + (err.message || ''));
+    const f = friendlyError(err, "I couldn't delete that entry. Try again.");
+    alert(f.text);
   }
 }
 
@@ -1155,7 +1159,8 @@ document.getElementById('btn-connect-ms').addEventListener('click', async () => 
     const { authorizeUrl } = await r.json();
     window.location.href = authorizeUrl;
   } catch (err) {
-    flash(status, 'Could not start sign-in. ' + (err.message || ''), 'error');
+    const f = friendlyError(err, "I couldn't start the Outlook sign-in. Try again.");
+    flash(status, f.text, 'error');
   }
 });
 
@@ -1194,7 +1199,8 @@ document.getElementById('btn-send-invite').addEventListener('click', async () =>
     nameEl.value = '';
     messageEl.value = '';
   } catch (err) {
-    flash(status, 'Could not generate link: ' + (err.message || ''), 'error');
+    const f = friendlyError(err, "I couldn't generate a sign-in link for that email. Try again.");
+    flash(status, f.text, 'error');
   } finally {
     btn.disabled = false;
     btn.textContent = 'Send sign-in link';
@@ -1225,7 +1231,8 @@ document.getElementById('btn-claim-account').addEventListener('click', async () 
     status.style.color = 'var(--text)';
   } catch (err) {
     status.style.color = 'var(--danger)';
-    status.textContent = 'Could not save: ' + (err.message || 'unknown error');
+    const f = friendlyError(err, "I couldn't save your account email. Try again.");
+    status.textContent = f.text;
   } finally {
     btn.disabled = false;
     btn.textContent = 'Save my account';
@@ -1242,7 +1249,8 @@ document.getElementById('btn-disconnect-ms').addEventListener('click', async () 
     flash(status, 'Outlook disconnected.', 'loading');
     renderSettings();
   } catch (err) {
-    flash(status, 'Disconnect failed. ' + (err.message || ''), 'error');
+    const f = friendlyError(err, "I couldn't disconnect Outlook. Try again.");
+    flash(status, f.text, 'error');
   }
 });
 
@@ -1258,7 +1266,8 @@ document.getElementById('btn-save-calendar').addEventListener('click', async () 
     if (!r.ok) throw new Error(await r.text());
     flash(status, url ? 'Saved. I\'ll check your calendar daily.' : 'Cleared. No calendar nudges.', 'loading');
   } catch (err) {
-    flash(status, 'Could not save. ' + (err.message || ''), 'error');
+    const f = friendlyError(err, "I couldn't save the calendar URL. Try again.");
+    flash(status, f.text, 'error');
   }
 });
 
