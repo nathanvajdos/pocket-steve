@@ -198,11 +198,17 @@
     <section id="view-brief" class="view">
       <header class="bar">
         <button class="back" data-go="home">&larr;</button>
-        <h2>Heading somewhere?</h2>
       </header>
-      <p class="prompt-text">Type the place or event. I'll pull up the people you've met there.</p>
-      <input id="brief-where" type="text" list="places" autocomplete="off" placeholder="e.g. Elementary School" />
-      <button class="btn-primary" id="btn-brief">Pull up the people</button>
+
+      <div class="brief-hero">
+        <h2 class="brief-h">Where are you headed?</h2>
+        <p class="brief-tag">I&rsquo;ll surface who you&rsquo;ve met there before you walk in.</p>
+      </div>
+
+      <input id="brief-where" type="text" list="places" autocomplete="off" placeholder="School carnival. Lake house. The office." />
+      <button class="btn-primary" id="btn-brief">Bring them to mind</button>
+      <p class="brief-fineprint">I match loosely &mdash; type how you&rsquo;d say it, not exactly how you saved it.</p>
+
       <div id="brief-result"></div>
     </section>
 

@@ -802,15 +802,34 @@ btnBrief.addEventListener('click', async () => {
   if (!where) { flash(briefResult, "Type where you're heading first.", 'error'); return; }
 
   btnBrief.disabled = true;
-  btnBrief.textContent = 'Pulling them up...';
-  briefResult.innerHTML = '<div class="loading">Looking through your past meets...</div>';
+  btnBrief.textContent = 'Thinking...';
+  // Friendly multi-stage loading copy so the user sees Steve "doing something"
+  // rather than a generic spinner.
+  briefResult.innerHTML = `
+    <div class="brief-thinking">
+      <div class="brief-thinking-dot"></div>
+      <div class="brief-thinking-text" id="brief-thinking-text">Looking through who you&rsquo;ve met at <strong>${escapeHtml(where)}</strong>&hellip;</div>
+    </div>
+  `;
+  // Swap the copy at ~1.2s so it feels like Steve is reasoning, not stalled
+  setTimeout(() => {
+    const t = document.getElementById('brief-thinking-text');
+    if (t) t.innerHTML = `Pulling out what&rsquo;ll spark your memory&hellip;`;
+  }, 1200);
 
   try {
     const r = await fetchAuth('/api/entries', { method: 'GET' });
     if (!r.ok) throw new Error(await r.text());
     const { entries } = await r.json();
     if (!entries.length) {
-      briefResult.innerHTML = '<div class="empty">No one saved yet. Add someone first.</div>';
+      briefResult.innerHTML = `
+        <div class="brief-empty">
+          <div class="brief-empty-icon" aria-hidden="true">·</div>
+          <div class="brief-empty-headline">Nothing to bring to mind yet.</div>
+          <div class="brief-empty-body">Capture someone first — talk into the mic, snap a card, drop a LinkedIn URL. Steve starts working the moment you do.</div>
+          <button class="btn-primary" data-go="capture" style="margin-top:14px;">+ Just met someone</button>
+        </div>
+      `;
       return;
     }
 
@@ -832,7 +851,13 @@ btnBrief.addEventListener('click', async () => {
     if (!b.ok) throw new Error(await b.text());
     const { matches } = await b.json();
     if (!matches || matches.length === 0) {
-      briefResult.innerHTML = '<div class="empty">No one matches that place yet. Keep adding people!</div>';
+      briefResult.innerHTML = `
+        <div class="brief-empty">
+          <div class="brief-empty-icon" aria-hidden="true">·</div>
+          <div class="brief-empty-headline">No matches at <em>${escapeHtml(where)}</em> yet.</div>
+          <div class="brief-empty-body">Try a different place, or come back after you&rsquo;ve captured a few people there.</div>
+        </div>
+      `;
       return;
     }
 
