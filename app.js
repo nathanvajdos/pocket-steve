@@ -465,6 +465,19 @@ function stopRecording() {
   // before it disappears when they hit Save (it's persistent until the next
   // recording starts).
   if (navigator.vibrate) navigator.vibrate([5, 30, 5]);
+
+  // Bring Save into view if the user actually captured something. After
+  // talking into the mic, their eye is anchored on the listening pane;
+  // Save lives below the fold on a phone. Same principle as v1.7.5/v1.7.6
+  // — the next obvious action should be the visible next action. block:
+  // 'center' keeps the listening pane partially visible above so the user
+  // doesn't lose context.
+  const captured = (captureInput.value || '').trim();
+  if (captured && btnSave) {
+    try {
+      btnSave.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (_) { /* older browsers — no-op */ }
+  }
 }
 
 // ---------- photo capture (Gemini Vision) ----------
