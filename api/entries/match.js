@@ -57,18 +57,52 @@ export default async function handler(req, res) {
     pets: pets || []
   };
 
-  const systemInstruction = `You decide whether a brand-new capture about a person/group describes the SAME person/group as one of the existing root entries in their journal.
+  const systemInstruction = `You decide whether a brand-new capture about a person/group describes the SAME person/group as one of the existing root entries in the user's journal. The user is about to be asked "should I merge?", so a wrong "yes" auto-creates a confused thread; a wrong "no" just creates a duplicate the user can clean up.
 
-A match means: this new note is about a person they've already saved — they ran into the same person again (or are filling in more detail). Same KIDS' names, same PETS, same DISTINCTIVE NAMES, plus same context (location, role) is a strong match. A common first name alone is NOT enough.
+EVIDENCE HIERARCHY, strongest to weakest:
 
-Return ONLY valid JSON in this shape, no preamble:
+  STRONG (high confidence on its own)
+   - Same named pet ('Otis (pug)' = 'Otis (pug)')
+   - Same named kid ('Malachi' = 'Malachi')
+   - Same distinctive full name ('Ranbir Patel' on both sides)
+
+  MODERATE (medium confidence; needs at least one supporting cue)
+   - Same first name + same where_met
+   - Same first name + same distinctive trait
+   - Same family-name reference + same where_met
+
+  WEAK (low confidence at best — usually do not merge)
+   - Same where_met alone (lots of people meet at the same place)
+   - Same role/company alone
+   - Same general aesthetic ('tattooed', 'tall')
+
+  NOT EVIDENCE
+   - Both sides have empty kids[] or empty pets[]: this is absence on both
+     sides, NOT agreement. Do not weight it.
+   - Both sides have empty traits[]: same — absence is absence.
+
+EXAMPLES:
+
+  YES, high:    new={kids:[Malachi], pets:[Otis (pug)]} vs old={kids:[Malachi], pets:[Otis (pug)]}
+                 — distinctive pet name + distinctive kid name = same family
+
+  YES, medium:  new={names:[Sarah Chen], where:Acme conf} vs old={names:[Sarah Chen], where:Acme conf}
+                 — full name + same context
+
+  NO:           new={names:[Sarah], where:Elementary School} vs old={names:[Sarah], where:Elementary School}
+                 — common first name + common location is too thin without other support
+
+  NO:           new={kids:[], where:Lake House} vs old={kids:[], where:Lake House}
+                 — empty kids on both is absence, not agreement; same place = weak
+
+Return ONLY valid JSON in this exact shape, no preamble, no markdown fences:
 {
   "match_id": "<uuid of existing entry, or empty string if no match>",
   "confidence": "high" | "medium" | "low" | "none",
-  "reason": "1-sentence explanation"
+  "reason": "1-sentence explanation citing the specific evidence (or its absence)"
 }
 
-Be strict about high confidence. False merges are worse than missed merges; users can manually merge later but can't easily un-merge from a wrong auto-decision.`;
+Default to NOT merging when uncertain. Users can manually merge later; they cannot easily un-merge a wrong auto-decision.`;
 
   const userPrompt = `New capture:\n${JSON.stringify(newPerson, null, 2)}\n\nExisting root entries to compare:\n${JSON.stringify(
     pool.map(c => ({
@@ -92,7 +126,10 @@ Be strict about high confidence. False merges are worse than missed merges; user
       user: userPrompt,
       json: true,
       temperature: 0.1,
-      maxTokens: 400
+      // Bumped 400 -> 900. The richer evidence-hierarchy prompt sometimes drafts
+      // longer reasons before settling. Same truncation-502 lineage as v1.5.2
+      // (brief), v1.6.3 (extract), v1.6.4 (photo), v1.6.5 (linkedin).
+      maxTokens: 900
     });
 
     if (!parsed.match_id) return res.status(200).json({ match: null });
