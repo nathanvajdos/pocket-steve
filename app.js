@@ -723,7 +723,7 @@ function renderCaptureResult(entry, mergedIntoExisting = false) {
   }
   if (entry.next_likely_at) {
     const dt = new Date(entry.next_likely_at);
-    nextLines.push(`I&rsquo;ll surface them on your home screen the week of ${formatWhen(entry.next_likely_at)}, and remind you 30 min before.`);
+    nextLines.push(`I&rsquo;ll bring them to mind the week of ${formatWhen(entry.next_likely_at)}, and remind you 30 min before.`);
   } else if (entry.where_met) {
     nextLines.push(`If you connect your calendar, I&rsquo;ll auto-remind you 30 min before any event matching <em>${escapeHtml(entry.where_met)}</em>.`);
   }
@@ -882,8 +882,8 @@ async function renderLibrary() {
     const peopleLabel = entries.length === 1 ? 'person' : 'people';
     let line = `${entries.length} ${peopleLabel} remembered`;
     if (totalNotes) {
-      const noteLabel = totalNotes === 1 ? 'follow-up note' : 'follow-up notes';
-      line += ` · ${totalNotes} ${noteLabel}`;
+      const seenAgainLabel = totalNotes === 1 ? 'time you met again' : 'times you met again';
+      line += ` · ${totalNotes} ${seenAgainLabel}`;
     }
     tag.textContent = line;
   }
@@ -902,7 +902,7 @@ function entryCard(entry) {
 function renderCardView(div, entry) {
   const noteCount = entry.note_count || 0;
   const noteBadge = noteCount > 0
-    ? `<span class="note-badge" title="${noteCount} additional note${noteCount === 1 ? '' : 's'}">+${noteCount} note${noteCount === 1 ? '' : 's'}</span>`
+    ? `<span class="note-badge" title="${noteCount} more time${noteCount === 1 ? '' : 's'} you met them">+${noteCount} more time${noteCount === 1 ? '' : 's'}</span>`
     : '';
   const lastSeen = entry.last_seen && entry.last_seen !== entry.created_at
     ? ` · last seen ${formatWhen(entry.last_seen)}`
@@ -1078,7 +1078,7 @@ async function renderSettings() {
   // Surface OAuth callback flags from the URL (set by /api/oauth/microsoft/callback)
   const hashParams = new URLSearchParams(location.search);
   if (hashParams.get('oauthConnected')) {
-    flash(document.getElementById('settings-status'), 'Outlook connected. I\'ll start scanning your calendar daily.', 'loading');
+    flash(document.getElementById('settings-status'), 'Outlook connected. I\'ll watch your calendar daily for places where you\'ve met someone.', 'loading');
     history.replaceState({}, '', location.pathname);
   } else if (hashParams.get('oauthError')) {
     flash(document.getElementById('settings-status'), 'Could not connect: ' + hashParams.get('oauthError'), 'error');
@@ -1194,7 +1194,7 @@ document.getElementById('btn-claim-account').addEventListener('click', async () 
 });
 
 document.getElementById('btn-disconnect-ms').addEventListener('click', async () => {
-  if (!confirm('Disconnect Outlook? I\'ll stop scanning your calendar until you reconnect.')) return;
+  if (!confirm('Disconnect Outlook? I\'ll stop watching your calendar until you reconnect.')) return;
   const status = document.getElementById('settings-status');
   flash(status, 'Disconnecting...', 'loading');
   try {
