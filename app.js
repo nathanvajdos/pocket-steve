@@ -304,6 +304,9 @@ const btnSave = document.getElementById('btn-save');
 const btnMic = document.getElementById('btn-mic');
 const micLabel = document.getElementById('mic-label');
 const captureHint = document.getElementById('capture-hint');
+const micCue = document.getElementById('mic-cue');
+const listeningPane = document.getElementById('listening-pane');
+const listeningTranscript = document.getElementById('listening-transcript');
 
 // ---------- voice capture (browser-native SpeechRecognition) ----------
 
@@ -316,7 +319,8 @@ let interimText = '';
 if (!SR) {
   // Older browser — keep the old "tap keyboard mic" hint
   btnMic.style.display = 'none';
-  captureHint.innerHTML = 'Tap inside the field below, then <strong>tap the mic on your keyboard</strong> and talk.';
+  captureHint.innerHTML = 'Open <strong>Other ways to capture</strong> below and type or use your keyboard mic.';
+  if (micCue) micCue.hidden = true;
 } else {
   btnMic.addEventListener('click', toggleRecording);
 }
@@ -341,7 +345,17 @@ function startRecording() {
     recognition.onstart = () => {
       isRecording = true;
       btnMic.classList.add('recording');
-      micLabel.textContent = 'Listening… tap to stop';
+      micLabel.textContent = 'Listening — tap to stop';
+      if (micCue) micCue.hidden = true;
+      if (listeningPane) {
+        listeningPane.hidden = false;
+        listeningTranscript.textContent = baselineText.trim() || '';
+        listeningTranscript.classList.remove('listening-empty');
+        if (!listeningTranscript.textContent) {
+          listeningTranscript.textContent = 'I\'ll show what I hear right here.';
+          listeningTranscript.classList.add('listening-empty');
+        }
+      }
       if (navigator.vibrate) navigator.vibrate(8);
     };
 
@@ -358,7 +372,12 @@ function startRecording() {
         if (!baselineText.endsWith(' ')) baselineText += ' ';
       }
       interimText = interimChunk;
-      captureInput.value = (baselineText + interimText).trim();
+      const combined = (baselineText + interimText).trim();
+      captureInput.value = combined;
+      if (listeningPane && !listeningPane.hidden) {
+        listeningTranscript.textContent = combined || 'I\'ll show what I hear right here.';
+        listeningTranscript.classList.toggle('listening-empty', !combined);
+      }
     };
 
     recognition.onerror = (e) => {
@@ -390,7 +409,11 @@ function stopRecording() {
     recognition = null;
   }
   btnMic.classList.remove('recording');
-  micLabel.textContent = 'Tap to talk';
+  micLabel.textContent = 'Tap and tell me';
+  if (micCue) micCue.hidden = false;
+  // Keep the listening pane visible briefly so the user sees what was captured
+  // before it disappears when they hit Save (it's persistent until the next
+  // recording starts).
   if (navigator.vibrate) navigator.vibrate([5, 30, 5]);
 }
 
@@ -669,11 +692,54 @@ async function finalizeSave(parsed, text, where, parentId) {
 
 function renderCaptureResult(entry, mergedIntoExisting = false) {
   captureResult.hidden = false;
-  const verb = mergedIntoExisting ? 'Added a note to your existing person.' : 'Got it. Saved.';
-  captureResult.innerHTML = `<div class="prompt-text">${verb}</div>`;
+  // Hide the listening pane after save — the moment is over.
+  if (listeningPane) listeningPane.hidden = true;
+
+  const where = entry.where_met || 'Unspecified';
+  const headline = mergedIntoExisting
+    ? `Added another note to ${entry.headline ? '"' + escapeHtml(entry.headline) + '"' : 'this person'}.`
+    : `Saved to your memory.`;
+
+  // Build the "what happens next" block so the user knows where this lives.
+  const nextLines = [];
+  if (entry.where_met) {
+    nextLines.push(`I&rsquo;ll bring them up next time you say <em>&ldquo;Heading to ${escapeHtml(entry.where_met)}&rdquo;</em>.`);
+  }
+  if (entry.next_likely_at) {
+    const dt = new Date(entry.next_likely_at);
+    nextLines.push(`I&rsquo;ll surface them on your home screen the week of ${formatWhen(entry.next_likely_at)}, and remind you 30 min before.`);
+  } else if (entry.where_met) {
+    nextLines.push(`If you connect your calendar, I&rsquo;ll auto-remind you 30 min before any event matching <em>${escapeHtml(entry.where_met)}</em>.`);
+  }
+
+  captureResult.innerHTML = `
+    <div class="save-confirmation">
+      <div class="save-check" aria-hidden="true">✓</div>
+      <h3 class="save-headline">${headline}</h3>
+    </div>
+  `;
+
   const card = entryCard(entry);
   card.querySelector('.actions-row').appendChild(buildCalendarChip(entry));
   captureResult.appendChild(card);
+
+  if (nextLines.length) {
+    const next = document.createElement('div');
+    next.className = 'save-next';
+    next.innerHTML = `
+      <div class="save-next-label">Here&rsquo;s when you&rsquo;ll see them again</div>
+      <ul>${nextLines.map(l => `<li>${l}</li>`).join('')}</ul>
+    `;
+    captureResult.appendChild(next);
+  }
+
+  const actions = document.createElement('div');
+  actions.className = 'save-actions';
+  actions.innerHTML = `
+    <button class="btn-secondary" data-go="home">Back to home</button>
+    <button class="btn-tertiary" data-go="library">See everyone</button>
+  `;
+  captureResult.appendChild(actions);
 }
 
 // ---------- briefing flow ----------

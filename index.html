@@ -96,57 +96,86 @@
         <button class="back" data-go="home">&larr;</button>
         <h2>Just met someone</h2>
       </header>
-      <p class="prompt-text" id="capture-hint">
-        Tap the big mic button and just talk. Names, kids, pets, where you met, anything you noticed.
-      </p>
-      <div class="capture-actions">
-        <button class="mic-button" id="btn-mic" type="button" aria-label="Tap to record">
-          <span class="mic-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-              <line x1="12" y1="19" x2="12" y2="23"></line>
-              <line x1="8" y1="23" x2="16" y2="23"></line>
-            </svg>
-          </span>
-          <span class="mic-label" id="mic-label">Tap to talk</span>
-          <span class="mic-pulse" aria-hidden="true"></span>
-        </button>
-        <label class="cam-button" for="capture-photo-input">
-          <span class="cam-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-              <circle cx="12" cy="13" r="4"></circle>
-            </svg>
-          </span>
-          <span>Snap a card or name tag</span>
-        </label>
-        <input id="capture-photo-input" type="file" accept="image/*" capture="environment" hidden />
-      </div>
-      <div id="photo-preview" hidden></div>
 
-      <details class="enrich-fold">
-        <summary>Or paste a LinkedIn URL or profile text</summary>
-        <div class="enrich-body">
-          <p class="prompt-text" style="margin:6px 0 8px;">Paste a LinkedIn profile URL, or copy the visible &ldquo;About&rdquo; text from a profile and paste it here. I&rsquo;ll pull out the structured details.</p>
-          <input id="linkedin-url" type="url" placeholder="https://www.linkedin.com/in/..." inputmode="url" autocomplete="off" />
-          <textarea id="linkedin-text" rows="3" placeholder="Or paste profile text" style="margin-top:6px;"></textarea>
-          <button class="btn-primary" id="btn-enrich-linkedin" style="margin-top:8px;">Pull from LinkedIn</button>
-          <div id="linkedin-status"></div>
+      <p class="capture-hero" id="capture-hint">
+        Just <strong>tell me about them</strong>. I&rsquo;ll remember for you.
+      </p>
+
+      <button class="mic-button" id="btn-mic" type="button" aria-label="Tap and tell me">
+        <span class="mic-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="23"></line>
+            <line x1="8" y1="23" x2="16" y2="23"></line>
+          </svg>
+        </span>
+        <span class="mic-label" id="mic-label">Tap and tell me</span>
+        <span class="mic-pulse" aria-hidden="true"></span>
+      </button>
+      <p class="mic-cue" id="mic-cue">Names, kids, pets, where you met &mdash; anything you noticed.</p>
+
+      <div id="listening-pane" class="listening-pane" hidden>
+        <div class="listening-label">
+          <span class="listening-dot"></span>
+          <span>Listening&hellip;</span>
+        </div>
+        <div class="listening-transcript" id="listening-transcript"></div>
+        <div class="listening-hint">Tap the mic again when you&rsquo;re done.</div>
+      </div>
+
+      <details class="capture-more">
+        <summary>Other ways to capture</summary>
+        <div class="capture-more-body">
+          <label class="cam-button" for="capture-photo-input">
+            <span class="cam-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+            </span>
+            <span>Snap a card or name tag</span>
+          </label>
+          <input id="capture-photo-input" type="file" accept="image/*" capture="environment" hidden />
+          <details class="enrich-fold">
+            <summary>Paste a LinkedIn URL or profile text</summary>
+            <div class="enrich-body">
+              <p class="prompt-text" style="margin:6px 0 8px;">Paste a LinkedIn profile URL, or copy the visible &ldquo;About&rdquo; text from a profile and paste it here.</p>
+              <input id="linkedin-url" type="url" placeholder="https://www.linkedin.com/in/..." inputmode="url" autocomplete="off" />
+              <textarea id="linkedin-text" rows="3" placeholder="Or paste profile text" style="margin-top:6px;"></textarea>
+              <button class="btn-primary" id="btn-enrich-linkedin" style="margin-top:8px;">Pull from LinkedIn</button>
+              <div id="linkedin-status"></div>
+            </div>
+          </details>
+          <details class="enrich-fold">
+            <summary>Or just type it</summary>
+            <div class="enrich-body">
+              <textarea id="capture-input" rows="5" placeholder="Met a couple at the school carnival. Dog named Otis, kid Malachi, from California, all tatted up..."></textarea>
+            </div>
+          </details>
         </div>
       </details>
 
-      <textarea id="capture-input" rows="5" placeholder="...or type. Met a couple at the school carnival. Dog named Otis, kid Malachi, from California, all tatted up..."></textarea>
-      <div class="row">
-        <label>Where did this happen?</label>
-        <input id="capture-where" type="text" placeholder="e.g. Elementary School Carnival" />
-      </div>
-      <div class="row">
-        <label>When might you see them next? <span style="opacity:.5;">(optional but helps the nudge)</span></label>
-        <input id="capture-next-at" type="datetime-local" />
-        <input id="capture-next-where" type="text" placeholder="Same place, or different?" style="margin-top:6px;" />
-      </div>
-      <button class="btn-primary" id="btn-save">Save & extract</button>
+      <div id="photo-preview" hidden></div>
+
+      <details class="capture-details">
+        <summary>Add details for better recall <span class="optional">&middot; optional</span></summary>
+        <div class="capture-details-body">
+          <div class="row">
+            <label>Where did this happen?</label>
+            <input id="capture-where" type="text" placeholder="e.g. Elementary School Carnival" />
+            <p class="row-hint">This is what I&rsquo;ll match against next time you say &ldquo;Heading somewhere?&rdquo;</p>
+          </div>
+          <div class="row">
+            <label>When might you see them next?</label>
+            <input id="capture-next-at" type="datetime-local" />
+            <input id="capture-next-where" type="text" placeholder="Same place, or different?" style="margin-top:6px;" />
+            <p class="row-hint">If you set this, I&rsquo;ll surface them on your home screen the week of, and remind you 30 min before.</p>
+          </div>
+        </div>
+      </details>
+
+      <button class="btn-primary" id="btn-save">Save to your memory</button>
       <div id="capture-result" hidden></div>
     </section>
 

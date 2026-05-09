@@ -529,8 +529,183 @@ textarea:focus, input:focus {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ---- capture: mic + camera row ---- */
+/* ---- capture: hero copy + mic + secondary capture options ---- */
 
+.capture-hero {
+  font-size: 19px;
+  line-height: 1.4;
+  color: var(--text);
+  margin: 8px 0 16px;
+  letter-spacing: -0.005em;
+}
+.capture-hero strong {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.mic-cue {
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  margin: 8px 0 18px;
+}
+
+/* Listening pane — appears below the mic while recording. The whole point
+   is to make it obvious WHAT is being captured. The transcript appears here
+   as the user talks, in a styled card (not in the textarea, which is hidden
+   away under "Other ways to capture" now). */
+.listening-pane {
+  background: linear-gradient(180deg, rgba(255,184,77,0.06) 0%, var(--surface) 100%);
+  border: 1px solid rgba(255,184,77,0.4);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  margin: 0 0 18px;
+  animation: fadeUp 0.18s ease-out;
+}
+.listening-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+.listening-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--danger);
+  animation: micPulse 1s ease-in-out infinite;
+}
+.listening-transcript {
+  color: var(--text);
+  font-size: 17px;
+  line-height: 1.45;
+  min-height: 48px;
+  white-space: pre-wrap;
+}
+.listening-transcript.listening-empty {
+  color: var(--muted);
+  font-style: italic;
+}
+.listening-hint {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+.capture-more, .capture-details {
+  margin: 0 0 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.capture-more > summary, .capture-details > summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  -webkit-tap-highlight-color: transparent;
+}
+.capture-more > summary::-webkit-details-marker,
+.capture-details > summary::-webkit-details-marker { display: none; }
+.capture-more[open] > summary,
+.capture-details[open] > summary {
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+.capture-more-body, .capture-details-body {
+  padding: 14px 16px 18px;
+}
+.capture-more-body > .cam-button { margin-bottom: 10px; }
+.optional {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+.row-hint {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* Save confirmation — shown after saving. Tells the user explicitly where
+   the data went and when they'll see it again. The "Johnny Ive" answer to
+   "where does the information go?" — make it obvious. */
+.save-confirmation {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0 14px;
+  animation: fadeUp 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.save-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #1a1208;
+  font-size: 20px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.save-headline {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: -0.005em;
+}
+.save-next {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-top: 14px;
+}
+.save-next-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.save-next ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.save-next em {
+  color: var(--accent);
+  font-style: normal;
+}
+.save-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+.save-actions > button {
+  flex: 1;
+  padding: 14px 16px;
+}
+
+/* Legacy class name preserved for callers; old uses no longer needed */
 .capture-actions {
   display: flex;
   flex-direction: column;
