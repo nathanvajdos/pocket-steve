@@ -56,7 +56,7 @@ export default async function handler(req, res) {
     const inviterName = friendlyInviter(inviter);
     const recipientFirstName = cleanEmail.split('@')[0];
 
-    const subject = `${inviterName} invited you to Steve`;
+    const subject = `${inviterName} invited you to Steve.ai`;
     const body = buildPlainTextBody({
       inviterName,
       recipientFirstName,
@@ -78,7 +78,7 @@ export default async function handler(req, res) {
 function buildPlainTextBody({ inviterName, recipientFirstName, actionLink }) {
   return `Hi ${recipientFirstName},
 
-Try Steve — a little memory app for the people you meet.
+Try Steve.ai — a little memory app for the people you meet.
 
 Open this email on your iPhone and tap the link below to sign in instantly (no password):
 
@@ -86,7 +86,7 @@ ${actionLink}
 
 Once it opens in Safari, tap Share → Add to Home Screen to make it a real app icon.
 
-Then tap "+ Just met someone" and just talk — the app remembers everyone you meet so you can be the person who actually remembers names, kids, pets, and details next time you bump into them.
+Then tap "+ Just met someone" and just talk — Steve.ai remembers everyone you meet so you can be the person who actually remembers names, kids, pets, and details next time you bump into them.
 
 — ${inviterName}
 
