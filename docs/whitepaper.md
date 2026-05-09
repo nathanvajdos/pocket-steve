@@ -137,7 +137,7 @@ This is the feature most likely to make the product feel magical and differentia
 
 No personal CRM does this. The closest analog is Dex's pre-meeting briefs, which are generated only for events with explicit attendees — a corporate calendar pattern. Steve's nudges fire on *any* event matching a place where the user has met someone, including unstructured social events that have no attendee list.
 
-Tooling: Microsoft Graph + Google Calendar OAuth + .ics share URL fallback. Already scaffolded in the v1 codebase.
+Tooling: **Microsoft Graph OAuth + .ics share URL fallback** are scaffolded in the v1 codebase (`api/oauth/microsoft.js`, `api/_microsoft.js`, `.ics` parser in `api/_ics.js`). Google Calendar OAuth is queued for a future iteration but is *not* shipped today.
 
 ### 4.4 Multi-model routing (the model is not the product)
 
