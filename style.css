@@ -1088,14 +1088,16 @@ textarea:focus, input:focus {
   font-style: italic;
 }
 
-.capture-more, .capture-details {
+/* .capture-more wrapper removed in v1.7.2 — photo is now a peer of mic.
+   .capture-details (the where + when fold) styles preserved below. */
+.capture-details {
   margin: 0 0 14px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
 }
-.capture-more > summary, .capture-details > summary {
+.capture-details > summary {
   cursor: pointer;
   list-style: none;
   padding: 14px 16px;
@@ -1104,17 +1106,36 @@ textarea:focus, input:focus {
   color: var(--muted);
   -webkit-tap-highlight-color: transparent;
 }
-.capture-more > summary::-webkit-details-marker,
 .capture-details > summary::-webkit-details-marker { display: none; }
-.capture-more[open] > summary,
 .capture-details[open] > summary {
   color: var(--text);
   border-bottom: 1px solid var(--border);
 }
-.capture-more-body, .capture-details-body {
+.capture-details-body {
   padding: 14px 16px 18px;
 }
-.capture-more-body > .cam-button { margin-bottom: 10px; }
+
+/* Quiet variant of the enrich-fold for the "Or type it" fallback —
+   no border, no background, just a small text-link feel. Voice + photo
+   are the loud paths; type is a quiet escape hatch. */
+.enrich-fold.enrich-fold-quiet {
+  background: transparent;
+  border: 0;
+  margin: 4px 0 14px;
+}
+.enrich-fold.enrich-fold-quiet > summary {
+  padding: 8px 0;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+.enrich-fold.enrich-fold-quiet[open] > summary {
+  border-bottom: 0;
+  margin-bottom: 4px;
+}
+.enrich-fold.enrich-fold-quiet .enrich-body {
+  padding: 0;
+}
 .optional {
   color: var(--muted);
   font-size: 12px;
