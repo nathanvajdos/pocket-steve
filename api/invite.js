@@ -55,7 +55,7 @@ export default async function handler(req, res) {
     const inviterName = friendlyInviter(inviter);
     const recipientFirstName = cleanName || cleanEmail.split('@')[0];
 
-    const subject = `${inviterName} invited you to Pocket Steve`;
+    const subject = `${inviterName} invited you to Steve`;
     const body = buildPlainTextBody({
       inviterName,
       recipientFirstName,
@@ -79,7 +79,7 @@ function buildPlainTextBody({ inviterName, recipientFirstName, actionLink, perso
   const note = personalNote ? `${personalNote}\n\n` : '';
   return `Hi ${recipientFirstName},
 
-${note}Try Pocket Steve — a little memory app for the people you meet.
+${note}Try Steve — a little memory app for the people you meet.
 
 Open this email on your iPhone and tap the link below to sign in instantly (no password):
 

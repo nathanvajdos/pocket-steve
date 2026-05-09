@@ -181,7 +181,7 @@ function emailBody({ event, entry, briefing }) {
     <p style="color:#666;font-size:14px;margin:0 0 8px;">${when} &middot; ${escape(event.summary || 'upcoming event')}${event.location ? ' &middot; ' + escape(event.location) : ''}</p>
     <h2 style="margin:8px 0 16px;">${escape(entry.headline || "Someone you've met")}</h2>
     <p style="font-size:17px;">${escape(briefing || entry.summary || '')}</p>
-    <p style="color:#666;font-size:13px;margin-top:24px;">Memory trigger from Pocket Steve. Where you met them: <em>${escape(entry.where_met || '')}</em></p>
+    <p style="color:#666;font-size:13px;margin-top:24px;">Memory trigger from Steve. Where you met them: <em>${escape(entry.where_met || '')}</em></p>
   </div>`;
 }
 

@@ -1,6 +1,6 @@
-# Pocket Steve
+# Steve
 
-A memory trigger for the people you meet. Working title: Pocket Steve, after the conversation that started it.
+A memory trigger for the people you meet. Working title: Steve, after the conversation that started it.
 
 **Live:** https://memory-trigger.vercel.app  
 **Whitepaper:** [docs/whitepaper.md](./docs/whitepaper.md)

@@ -1,5 +1,5 @@
 // Minimal service worker — just enough to make iOS treat this as installable.
-const CACHE = 'pocket-steve-v2';
+const CACHE = 'steve-v3';
 const ASSETS = ['/', '/index.html', '/style.css', '/app.js', '/manifest.json'];
 
 self.addEventListener('install', (e) => {

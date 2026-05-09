@@ -1,4 +1,4 @@
-# Pocket Steve — A Memory Trigger for the People You Meet
+# Steve — A Memory Trigger for the People You Meet
 
 *A whitepaper on the science, the competition, and the moat.*
 
@@ -12,7 +12,7 @@
 
 Adults forget the names, kids, pets, and distinctive details of the people they meet at social and professional events within hours. The cost is silent but real: trust is built on remembering. The person who walks up to a casual acquaintance six months later and says *"How's Malachi doing?"* creates a small but durable bond. The person who blanks does not. Existing tools — personal CRMs, note apps, voice memo apps — either treat this as a database problem (search a list) or a habits problem (remember to log it). Neither solves it. Both make the user do the work the brain is already failing to do.
 
-**Pocket Steve treats the problem as a *memory trigger* problem.** Capture has to be near-zero effort (voice, photo, no fields). Recall has to be proactive (the app surfaces who you might see *before* you walk into the next event), and it must give just enough cue to spark the user's own memory rather than dump a database row at them. The product's job is to be the spark, not the warehouse.
+**Steve treats the problem as a *memory trigger* problem.** Capture has to be near-zero effort (voice, photo, no fields). Recall has to be proactive (the app surfaces who you might see *before* you walk into the next event), and it must give just enough cue to spark the user's own memory rather than dump a database row at them. The product's job is to be the spark, not the warehouse.
 
 This document covers (1) the science of why this works, (2) what existing tools get right and wrong, (3) the moat we're building, and (4) where we go next.
 
@@ -38,13 +38,13 @@ This has direct UX consequences:
 - **Who they were with** (their kids, their partner, their dog) is a secondary cue that re-activates the schema.
 - **Distinctive traits** ("all tatted up", "from California") work because they break the pattern of generic faces.
 
-Pocket Steve indexes by `where_met` first because that's the cue most likely to fire when the user is heading back to that place. Every other field exists to deepen the cue, not to be searched as a database.
+Steve indexes by `where_met` first because that's the cue most likely to fire when the user is heading back to that place. Every other field exists to deepen the cue, not to be searched as a database.
 
 ### 2.3 Cue-dependent forgetting (Tulving)
 
 The "tip of the tongue" experience proves a key truth: **most "forgotten" memories aren't gone, they're just unreachable without the right cue.** Recognition hits 90%+ accuracy where free recall fails. ([structural-learning.com](https://www.structural-learning.com/post/ebbinghaus-forgetting-curve))
 
-Pocket Steve's recall flow ("Heading somewhere?") is a recognition task, not a recall task. The user types a place; the app surfaces a card; the user recognizes the people instantly. The brain does the heavy lifting from there. This is why the briefing only needs to be **two or three sentences** — it's a spark, not a transcript.
+Steve's recall flow ("Heading somewhere?") is a recognition task, not a recall task. The user types a place; the app surfaces a card; the user recognizes the people instantly. The brain does the heavy lifting from there. This is why the briefing only needs to be **two or three sentences** — it's a spark, not a transcript.
 
 ### 2.4 Levels of processing (Craik & Lockhart, 1972) and dual coding (Paivio, 1971)
 
@@ -60,7 +60,7 @@ This is why our `/api/extract` and `/api/extract-photo` endpoints fan out into s
 - **Don't build search-first UX.** Search punishes weak cues — the user has to already remember enough to find the entry. Recognition and proactive surfacing don't.
 - **Don't fragment one person across many entries.** That fights the schema-completion mechanism. Per-person history (timeline) is the right structure.
 - **Don't gamify, streak, or otherwise reward "use this every day."** The user opens the app at the moments dictated by their actual life (just met someone, heading somewhere). Anything that demands more frequent interaction creates friction without memory benefit.
-- **Don't make the app a notebook.** Notebooks are open-ended; they punish brevity. Pocket Steve should reward 20-second voice dumps and never expect a 5-paragraph write-up.
+- **Don't make the app a notebook.** Notebooks are open-ended; they punish brevity. Steve should reward 20-second voice dumps and never expect a 5-paragraph write-up.
 
 ---
 
@@ -79,14 +79,14 @@ We did not invent personal relationship management software. The category has ma
 | **[UpHabit](https://uphabit.com)** | varies | Originally personal-CRM, pivoted to "relationship selling" | — | Pivoted away from the core use case. Existing users were told to find alternatives. ([Dex's review](https://getdex.com/blog/streak-crm-review-2026-using-a-gmail-crm-for-personal-networking/)) |
 | **[Monica](https://monicahq.com)** | Free (self-hosted) or $9/mo | Open-source personal CRM | Privacy-first, self-host option, generous free tier | Form-heavy capture. No voice. Niche audience. |
 
-**Synthesis.** Personal CRMs are competent at *maintaining* relationships you already know exist. They are weak at *encoding* relationships you don't know exist yet — the exact moment Pocket Steve targets. None of them are voice-first; all of them require the user to type into fields. None of them tie capture to *place* (where_met) as the primary index. None of them surface people based on *upcoming events* — they surface based on time-since-last-contact.
+**Synthesis.** Personal CRMs are competent at *maintaining* relationships you already know exist. They are weak at *encoding* relationships you don't know exist yet — the exact moment Steve targets. None of them are voice-first; all of them require the user to type into fields. None of them tie capture to *place* (where_met) as the primary index. None of them surface people based on *upcoming events* — they surface based on time-since-last-contact.
 
 ### 3.2 The AI memory & voice apps
 
 | Tool | Pricing | Thesis | Notes |
 |---|---|---|---|
 | **[Mem.ai](https://mem.ai)** | $14.99/mo | AI-native personal knowledge | Powerful for general notes; not relationship-specific. |
-| **[Voicenotes](https://voicenotes.com)** | Freemium | Voice-first AI notes you can ask | Closest in *capture pattern* to Pocket Steve. But the data model is conversation-first, not person-first. |
+| **[Voicenotes](https://voicenotes.com)** | Freemium | Voice-first AI notes you can ask | Closest in *capture pattern* to Steve. But the data model is conversation-first, not person-first. |
 | **[AudioPen](https://audiopen.ai)** | $4-7/mo | Voice → polished text in any style | Excellent for writers/bloggers. Wrong shape for relationship memory. |
 | **[Speakwise](https://speakwiseapp.com)** | Freemium | Voice → structured notes with Notion sync | Good polish; same gap as AudioPen — note-shaped, not person-shaped. |
 | **[Remi8](https://remi8.ai)** | Freemium | Captures phone calls and FaceTime, transcribes, summarizes | More about meetings than meeting people. |
@@ -99,21 +99,21 @@ We did not invent personal relationship management software. The category has ma
 
 If we had to pick the single closest competitor, it's **Dex**. They've thought hardest about the relationship-management category. They have polish, integrations, and a paying user base.
 
-The space between Dex and Pocket Steve:
+The space between Dex and Steve:
 
-- **Capture modality.** Dex is type-first with email/LinkedIn import. Pocket Steve is voice-first and photo-first. At a kids' school event, the user is not on LinkedIn — they're talking to a stranger holding a juice box. Voice + photo is the right modality for this moment; type + import is the wrong one.
-- **Recall trigger.** Dex's reminders are time-based ("60 days since last contact"). Pocket Steve's are place-based and event-based ("you have a calendar event tomorrow at the elementary school where you met Dan and Sarah"). Place is a stronger encoding cue than time, per encoding specificity.
-- **Audience.** Dex serves the LinkedIn-heavy professional. Pocket Steve serves the same person *and* the parent at the school carnival, *and* the salesperson at the conference. Wider net, lower per-user complexity.
+- **Capture modality.** Dex is type-first with email/LinkedIn import. Steve is voice-first and photo-first. At a kids' school event, the user is not on LinkedIn — they're talking to a stranger holding a juice box. Voice + photo is the right modality for this moment; type + import is the wrong one.
+- **Recall trigger.** Dex's reminders are time-based ("60 days since last contact"). Steve's are place-based and event-based ("you have a calendar event tomorrow at the elementary school where you met Dan and Sarah"). Place is a stronger encoding cue than time, per encoding specificity.
+- **Audience.** Dex serves the LinkedIn-heavy professional. Steve serves the same person *and* the parent at the school carnival, *and* the salesperson at the conference. Wider net, lower per-user complexity.
 
 ---
 
 ## 4. The moat
 
-A sharp wedge isn't enough. Below are the four mechanisms that, used together, make Pocket Steve durable.
+A sharp wedge isn't enough. Below are the four mechanisms that, used together, make Steve durable.
 
 ### 4.1 The data moat (compounding switching cost)
 
-Every saved person is a switching cost. After six months of use, a Pocket Steve user has 50–200 entries with rich context: who they met, where, with whom, what was distinctive. Migrating that to another tool is unattractive — even if a competitor matches the feature set, the user is choosing between *keep using Pocket Steve* and *re-build from zero somewhere else*. This is the same moat that retains Notion users despite cheaper alternatives.
+Every saved person is a switching cost. After six months of use, a Steve user has 50–200 entries with rich context: who they met, where, with whom, what was distinctive. Migrating that to another tool is unattractive — even if a competitor matches the feature set, the user is choosing between *keep using Steve* and *re-build from zero somewhere else*. This is the same moat that retains Notion users despite cheaper alternatives.
 
 We strengthen this by:
 
@@ -122,7 +122,7 @@ We strengthen this by:
 
 ### 4.2 The voice + photo capture combo
 
-Most competitors offer one or the other, badly. Pocket Steve does both, well, and for the same data model. Photo-OCR pre-fills fields; voice adds context; the two compound (dual coding theory).
+Most competitors offer one or the other, badly. Steve does both, well, and for the same data model. Photo-OCR pre-fills fields; voice adds context; the two compound (dual coding theory).
 
 This is a genuinely defensible technical advantage in 2026 because:
 
@@ -133,15 +133,15 @@ This is a genuinely defensible technical advantage in 2026 because:
 
 This is the feature most likely to make the product feel magical and differentiate from every other personal CRM:
 
-> *Steve has a calendar event Saturday at the elementary school. Pocket Steve has matched that event location to the place where Steve met Dan and Sarah three months ago. Saturday morning at 8am, Steve gets an email: "You're heading to the school today. Last time you were there you met Dan and Sarah — kid Malachi, dog Otis, all tatted up, from California."*
+> *Steve has a calendar event Saturday at the elementary school. Steve has matched that event location to the place where Steve met Dan and Sarah three months ago. Saturday morning at 8am, Steve gets an email: "You're heading to the school today. Last time you were there you met Dan and Sarah — kid Malachi, dog Otis, all tatted up, from California."*
 
-No personal CRM does this. The closest analog is Dex's pre-meeting briefs, which are generated only for events with explicit attendees — a corporate calendar pattern. Pocket Steve's nudges fire on *any* event matching a place where the user has met someone, including unstructured social events that have no attendee list.
+No personal CRM does this. The closest analog is Dex's pre-meeting briefs, which are generated only for events with explicit attendees — a corporate calendar pattern. Steve's nudges fire on *any* event matching a place where the user has met someone, including unstructured social events that have no attendee list.
 
 Tooling: Microsoft Graph + Google Calendar OAuth + .ics share URL fallback. Already scaffolded in the v1 codebase.
 
 ### 4.4 Multi-model routing (the model is not the product)
 
-Pocket Steve does not commit to a single language model. The codebase has a thin routing layer (`api/_models.js`) that exposes one function — `complete({ task, system, user, json })` — and dispatches to whichever provider serves that task best.
+Steve does not commit to a single language model. The codebase has a thin routing layer (`api/_models.js`) that exposes one function — `complete({ task, system, user, json })` — and dispatches to whichever provider serves that task best.
 
 | Task | Default routing | Why |
 |---|---|---|
@@ -166,15 +166,83 @@ The product is "a memory trigger for the people you meet," not "an app powered b
 Two epistemic standards govern this whitepaper:
 
 1. **Competitive differentiators are defended by peer-reviewed cognitive science**, not by founder intuition. Section 5 lists each differentiator alongside the specific psychological mechanism it implements and the original-source citation. If a future iteration cannot point to a defensible mechanism, it doesn't ship.
-2. **Model-level claims are defended by reproducible benchmarks**, not by vendor marketing. The benchmark harness at `scripts/benchmark.mjs` runs Pocket Steve's actual production tasks (extract, brief, match, linkedin, calendar) against every provider with an API key configured, captures latency + output validity, and writes a timestamped report to `docs/benchmarks/`. Anyone with the repo can reproduce a run and audit the routing decisions.
+2. **Model-level claims are defended by reproducible benchmarks**, not by vendor marketing. The benchmark harness at `scripts/benchmark.mjs` runs Steve's actual production tasks (extract, brief, match, linkedin, calendar) against every provider with an API key configured, captures latency + output validity, and writes a timestamped report to `docs/benchmarks/`. Anyone with the repo can reproduce a run and audit the routing decisions.
 
 The benchmark harness deliberately does **not** use an LLM-as-judge for quality grading — quality of memory-trigger prose is a human judgment, not a model judgment, and using a model to grade other models is a known source of self-reinforcing bias ([Zheng et al., 2023](https://arxiv.org/abs/2306.05685)). Latency and output validity (does the JSON parse? do the expected fields exist?) are machine-graded; qualitative output samples are written into the report for human side-by-side comparison.
 
 The provider roster currently includes: **Gemini, Anthropic Claude, OpenAI, Cerebras (Llama), Groq (Llama), DeepSeek, Mistral, Kimi K2 (Moonshot), Perplexity (Sonar with web search), and xAI Grok.** Each routes through the same `complete()` function via a shared OpenAI-compatible adapter, so adding the next provider is a 5-line config block. Providers without a configured API key are skipped silently.
 
-### 4.6 Privacy as positioning
+### 4.6 Automation in the moment — the hardware question
 
-Every personal CRM competitor positions itself in some "professional networking" frame. Pocket Steve's positioning — *the parent at the elementary school carnival* — is emotionally distinct. We're not selling lead generation; we're selling presence. That has marketing implications:
+Recurring strategic question: *should Steve be a piece of dedicated hardware?* (An AI pin like Humane, a pendant like Friend, smart glasses like Meta Ray-Bans, an always-on listener.)
+
+Answer: **No new hardware. Software hooks into the hardware users already carry.**
+
+Three reasons:
+
+1. **The user already has the right hardware.** iPhone in pocket, AirPods in ears, Apple Watch on wrist. Each is a complete capture-and-recall surface for Steve. Asking the user to buy a new device is a 10× friction step that competitors who tried (Humane, Friend, Rabbit r1) have demonstrated does not work.
+2. **The category-defining moment is software polish, not hardware novelty.** Wispr Flow is not Wispr Pin. The differentiator is Cmd-K + a great model + low friction, not new silicon. Steve's equivalent is *one-tap-or-one-Siri-phrase* + a great model + sharp recall UX.
+3. **The integration surface that matters most is iOS itself.** Specifically: iOS Shortcuts + Siri intents + Lock Screen widgets + Apple Calendar + AirPods voice triggers. Each of these is a free and durable software hook that any user with an iPhone can wire up in 60 seconds without buying anything.
+
+The roadmap maps the automation surface, not the hardware surface:
+
+| Layer | Mechanism | Example moment |
+|---|---|---|
+| **Now** | iOS Shortcut deep link → `https://memory-trigger.vercel.app/?action=capture` | "Hey Siri, Steve me" → app opens to capture, mic focused. One Siri phrase → 1 tap to save. |
+| **Now** | URL param `?text=` and `?where=` for share-sheet handoffs | Share a contact card from any iPhone app → text gets pre-filled in capture. |
+| **Now** | Top-of-mind home-screen panel | Open the app → see the 3 people you might run into this week without searching. |
+| **v1.5** | iOS PWA Push Notifications (iOS 16.4+ supports for installed PWAs) | 30 minutes before a tagged event → push lands → tap to open the briefing. |
+| **v2** | Lock Screen widget | Glanceable "today's people" card on the lock screen, no app open required. |
+| **v2** | Apple Watch complication via PWA | Wrist flick shows the next memory-trigger card. |
+| **v3** | AirPods + iOS Shortcut + speech intent | "Steve, brief me" through earbuds while walking up to the door. The whisper happens in the AirPods. |
+| **v4 (years out)** | Smart glasses (Meta Ray-Bans, Apple Vision) — *partner integration, not our hardware* | Face recognition on glance + earbud whisper. We integrate; we don't build the glasses. |
+
+Every entry on this roadmap is software running on hardware the user already owns. The lowest layer (iOS Shortcut) ships in v1.4 today. Each subsequent layer compounds without invalidating the previous.
+
+The product is the *trigger*. The hardware is whatever the user already has between them and the moment.
+
+### 4.7 Validation: distinguishing little from large model improvements
+
+Adding a 4th, 5th, or 10th model provider to the routing layer is cheap. Knowing whether each one is a *little* or *large* improvement requires a measurement standard, not a vibe check.
+
+The benchmark harness at `scripts/benchmark.mjs` runs each task against every available provider and writes a timestamped report under `docs/benchmarks/`. The metrics:
+
+- **Latency** (ms, single-shot, network round-trip included)
+- **Validity** (does the output parse as the expected JSON shape, with all expected keys present)
+- **Output sample** (saved verbatim for human side-by-side comparison)
+
+We deliberately skip LLM-as-judge quality grading — [Zheng et al. (2023)](https://arxiv.org/abs/2306.05685) document the bias. Quality of memory-trigger prose is human-judged on the saved samples.
+
+**Improvement thresholds** (these are how a benchmark report is read):
+
+| Delta vs. baseline | Interpretation |
+|---|---|
+| Latency: **−50% or more** | LARGE improvement. Worth routing the task to the new provider, even at slightly higher cost. The user feels the speed. |
+| Latency: **−15% to −50%** | Moderate improvement. Worth a fallback-position slot in the routing list. |
+| Latency: **±15%** | Little or no improvement. Keep as a redundant fallback for resilience only. |
+| Validity: **drops below 100%** on a JSON task | Regression. Do not route this task to that provider unless every other has failed. |
+| Validity: **stable at 100%, sample noticeably warmer / sharper** (human read) | Move up the priority list for human-facing tasks like `brief`. The numbers say "same"; the eyes say "better." |
+
+The current activation status of each provider:
+
+| Provider | Status | Activate by |
+|---|---|---|
+| Gemini 2.5 Flash | ✅ Active | Already configured |
+| Cerebras Llama 3.3 70B | Adapter shipped | Add `CEREBRAS_API_KEY` (free at cloud.cerebras.ai) |
+| Anthropic Claude Haiku 4.5 | Adapter shipped | Add `ANTHROPIC_API_KEY` |
+| OpenAI gpt-4o-mini | Adapter shipped | Add `OPENAI_API_KEY` |
+| Groq Llama 3.3 70B | Adapter shipped | Add `GROQ_API_KEY` (free at console.groq.com) |
+| DeepSeek | Adapter shipped | Add `DEEPSEEK_API_KEY` |
+| Mistral Small | Adapter shipped | Add `MISTRAL_API_KEY` |
+| Kimi K2 (Moonshot) | Adapter shipped | Add `KIMI_API_KEY` |
+| Perplexity Sonar | Adapter shipped | Add `PERPLEXITY_API_KEY` |
+| xAI Grok 4 | Adapter shipped | Add `XAI_API_KEY` |
+
+The validation framework is in place. As keys come online, the benchmark script produces a comparable report each run. Pull requests welcome with new benchmark results in `docs/benchmarks/`.
+
+### 4.8 Privacy as positioning
+
+Every personal CRM competitor positions itself in some "professional networking" frame. Steve's positioning — *the parent at the elementary school carnival* — is emotionally distinct. We're not selling lead generation; we're selling presence. That has marketing implications:
 
 - The category is not LinkedIn productivity — it's *the same family of products as* Calm, Headspace, Strava. Tools that help you be a better version of yourself.
 - The privacy posture (no social, no team, no ads, your data is yours) is consistent with that positioning.
@@ -184,7 +252,7 @@ Every personal CRM competitor positions itself in some "professional networking"
 
 ## 5. Each competitive differentiator, scientifically defended
 
-Every claim in the table below maps a Pocket Steve design choice to the peer-reviewed cognitive-science result that justifies it. If a competitor copies any one row, the moat survives because the *combination* — captured cheaply via voice/photo, indexed by place, surfaced proactively, threaded by person, encoded richly across multiple modalities — is what compounds.
+Every claim in the table below maps a Steve design choice to the peer-reviewed cognitive-science result that justifies it. If a competitor copies any one row, the moat survives because the *combination* — captured cheaply via voice/photo, indexed by place, surfaced proactively, threaded by person, encoded richly across multiple modalities — is what compounds.
 
 | Differentiator | Mechanism | Original source |
 |---|---|---|
@@ -225,7 +293,7 @@ The single design principle in section 9 — *be the spark, not the warehouse* �
 
 ## 7. Roadmap that strengthens the moat
 
-This is a roadmap of *moat-deepening* features, not feature-of-the-week ideas. Each row asks: does this make Pocket Steve harder to replace?
+This is a roadmap of *moat-deepening* features, not feature-of-the-week ideas. Each row asks: does this make Steve harder to replace?
 
 | Phase | Feature | Why it deepens the moat |
 |---|---|---|
@@ -256,7 +324,7 @@ Note that nothing on this list pivots us toward a sales CRM, a feed, an enterpri
 
 1. **Does the briefing actually trigger memory the way Steve described?** Steve himself is the n=1 trial. His feedback after two weeks is the deciding signal. If yes → the product works. If no → the recall flow needs more cues (photos, group context, relationship graph).
 2. **How often do users hit the "snap a card" path vs. voice path?** That tells us whether the wedge is networking events or social/community events. The product copy and roadmap diverge sharply based on this answer.
-3. **What's the true habit cadence?** If users open Pocket Steve once a week and forget it the rest of the time, the calendar nudge becomes the only retention mechanism — and it has to work without fail.
+3. **What's the true habit cadence?** If users open Steve once a week and forget it the rest of the time, the calendar nudge becomes the only retention mechanism — and it has to work without fail.
 4. **Will users tolerate a manual calendar-share-URL paste?** Or do we need to ship Microsoft/Google OAuth before the second cohort?
 
 These are answered by use, not by debate.
@@ -271,7 +339,7 @@ When in doubt, the design rule is:
 
 If a feature increases capture friction, kill it. If a feature requires the user to remember something the app should remember for them, kill it. If a feature delivers a database row instead of a 2-sentence trigger, redesign it.
 
-Speed and simplicity aren't aesthetics. They're the load-bearing wall. The moment Pocket Steve becomes another tool the user has to remember to use, we have lost — because we are competing with the human brain itself, and the brain wins by default.
+Speed and simplicity aren't aesthetics. They're the load-bearing wall. The moment Steve becomes another tool the user has to remember to use, we have lost — because we are competing with the human brain itself, and the brain wins by default.
 
 Stay narrow. Ship sharp.
 

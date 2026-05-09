@@ -305,6 +305,57 @@ textarea:focus, input:focus {
   font-size: 14px;
 }
 
+/* ---- Top of mind (proactive home-screen surface) ---- */
+
+.top-of-mind {
+  margin-top: 28px;
+}
+.tom-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+.tom-header h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.tom-sub {
+  color: var(--muted);
+  font-size: 12px;
+}
+.tom-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .08s ease, border-color .15s;
+}
+.tom-card:active { transform: scale(0.99); }
+.tom-headline {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.tom-when {
+  font-size: 12px;
+  color: var(--muted);
+}
+
 .install-hint {
   margin-top: 24px;
   padding: 14px 16px;

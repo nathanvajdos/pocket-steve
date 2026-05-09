@@ -1,4 +1,4 @@
-// Pocket Steve — multi-user cloud sync + auth + calendar nudges.
+// Steve — multi-user cloud sync + auth + calendar nudges.
 //
 // Auth is via Supabase magic links. Entries and profile are cloud-synced
 // per user. Old v0 data in localStorage is migrated on first login.
@@ -62,6 +62,91 @@ function go(view) {
   window.scrollTo(0, 0);
   if (view === 'library') renderLibrary();
   if (view === 'settings') renderSettings();
+  if (view === 'home') renderTopOfMind();
+}
+
+// ---------- Top of mind: proactive surface on home screen ----------
+//
+// Shows the user upcoming/recently-relevant people without making them
+// search. Three signals, in priority order:
+//   1. Entries with next_likely_at within the next 7 days (user said "I'll
+//      see them at X on date Y" during capture)
+//   2. Entries captured in the last 7 days (recent enough to nudge re-meet)
+//   3. Latest 3 entries by recency
+// At least one of these is almost always non-empty after the first capture.
+
+async function renderTopOfMind() {
+  const panel = document.getElementById('top-of-mind');
+  const list = document.getElementById('tom-list');
+  const sub = document.getElementById('tom-sub');
+  if (!panel || !currentUser) return;
+
+  panel.hidden = true;
+  try {
+    const r = await fetchAuth('/api/entries', { method: 'GET' });
+    if (!r.ok) return;
+    const { entries } = await r.json();
+    if (!entries || !entries.length) return;
+
+    const now = Date.now();
+    const sevenDaysFromNow = now + 7 * 86400 * 1000;
+    const sevenDaysAgo = now - 7 * 86400 * 1000;
+
+    // Priority 1: upcoming next_likely_at
+    const upcoming = entries
+      .filter(e => e.next_likely_at && new Date(e.next_likely_at).getTime() > now && new Date(e.next_likely_at).getTime() < sevenDaysFromNow)
+      .sort((a, b) => new Date(a.next_likely_at) - new Date(b.next_likely_at));
+
+    // Priority 2: recent captures (last 7 days), excluding those already in upcoming
+    const upcomingIds = new Set(upcoming.map(e => e.id));
+    const recent = entries
+      .filter(e => !upcomingIds.has(e.id) && new Date(e.created_at).getTime() > sevenDaysAgo)
+      .slice(0, 3);
+
+    let cards = [];
+    let label = '';
+
+    if (upcoming.length) {
+      cards = upcoming.slice(0, 3);
+      label = `${upcoming.length} coming up this week`;
+    } else if (recent.length) {
+      cards = recent;
+      label = `Met recently — review before you see them again`;
+    } else {
+      // Priority 3: just show the latest 2 as a memory nudge
+      cards = entries.slice(0, 2);
+      label = 'Recent people';
+    }
+
+    list.innerHTML = '';
+    cards.forEach(e => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'tom-card';
+      const whenLine = e.next_likely_at
+        ? `Likely seeing them ${formatWhen(e.next_likely_at)}${e.next_likely_where ? ' · ' + escapeHtml(e.next_likely_where) : ''}`
+        : `Met ${formatWhen(e.created_at)}${e.where_met ? ' · ' + escapeHtml(e.where_met) : ''}`;
+      card.innerHTML = `
+        <div class="tom-headline">${escapeHtml(e.headline || 'Someone you met')}</div>
+        <div class="tom-when">${whenLine}</div>
+      `;
+      card.addEventListener('click', () => {
+        // Tapping a card jumps to brief flow with the relevant place pre-filled
+        const place = e.next_likely_where || e.where_met || '';
+        go('brief');
+        if (place) {
+          briefWhere.value = place;
+          setTimeout(() => btnBrief.click(), 50);
+        }
+      });
+      list.appendChild(card);
+    });
+
+    sub.textContent = label;
+    panel.hidden = false;
+  } catch {
+    /* silent — top-of-mind is a nice-to-have, not a critical path */
+  }
 }
 
 document.addEventListener('click', (e) => {
@@ -788,7 +873,7 @@ async function saveCardEdit(div, entry) {
 }
 
 async function deleteEntry(div, entry) {
-  if (!confirm(`Delete "${entry.headline || 'this person'}" from Pocket Steve? Can't undo.`)) return;
+  if (!confirm(`Delete "${entry.headline || 'this person'}" from Steve? Can't undo.`)) return;
   try {
     const r = await fetchAuth(`/api/entries?id=${encodeURIComponent(entry.id)}`, { method: 'DELETE' });
     if (!r.ok) throw new Error(await r.text());
@@ -985,12 +1070,12 @@ function buildIcsDataUrl(entry) {
   const dtEnd = new Date(dt.getTime() + 30 * 60000);
 
   const fmt = (d) => d.toISOString().replace(/[-:]/g,'').replace(/\.\d+/, '');
-  const summary = `Pocket Steve: ${entry.next_likely_where || entry.where_met || 'briefing'}`;
+  const summary = `Steve: ${entry.next_likely_where || entry.where_met || 'briefing'}`;
   const description = (entry.summary || entry.raw || '').replace(/\n/g,'\\n');
   const url = `${location.origin}/?brief=${encodeURIComponent(entry.where_met || '')}`;
 
   const ics = [
-    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Pocket Steve//EN','CALSCALE:GREGORIAN',
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Steve//EN','CALSCALE:GREGORIAN',
     'BEGIN:VEVENT',
     `UID:${entry.id}@steve`,
     `DTSTAMP:${fmt(new Date())}`,
@@ -1026,20 +1111,60 @@ function escapeHtml(s) {
   ));
 }
 
-// ---------- deep link from calendar reminder ----------
+// ---------- deep links (calendar reminder, iOS Shortcut, share sheet) ----------
+//
+// Supported URL params (all optional):
+//   ?brief=<place>           — open briefing for that place, auto-run
+//   ?action=capture          — open capture screen, focus mic (Shortcut entry)
+//   ?action=brief            — open briefing screen
+//   ?text=<voice memo>       — pre-fill capture textarea (Shortcut entry from
+//                              "Hey Siri, capture for Steve <text>" or share sheet)
+//   ?where=<place>           — pre-fill the "where" field on capture
+//
+// Example iOS Shortcut: "Steve me" -> URL "https://memory-trigger.vercel.app/
+// ?action=capture" -> Open in Safari. One Siri command, two taps to save.
 
 (function handleDeepLink() {
   const params = new URLSearchParams(location.search);
   const brief = params.get('brief');
-  if (brief) {
-    setTimeout(() => {
-      if (currentUser) {
-        go('brief');
-        briefWhere.value = brief;
-        btnBrief.click();
+  const action = params.get('action');
+  const text = params.get('text');
+  const where = params.get('where');
+
+  function applyOnLogin() {
+    if (!currentUser) return;
+    if (brief) {
+      go('brief');
+      briefWhere.value = brief;
+      setTimeout(() => btnBrief.click(), 50);
+      return;
+    }
+    if (action === 'capture' || text || where) {
+      go('capture');
+      if (text) captureInput.value = text;
+      if (where) captureWhere.value = where;
+      setTimeout(() => {
+        if (text || where) {
+          // Pre-filled — focus Save instead of mic so they can review and tap save
+          captureInput.focus();
+        } else {
+          // No content yet — focus the mic so one more tap captures
+          if (btnMic && !btnMic.hidden) btnMic.focus();
+        }
+      }, 100);
+      return;
+    }
+    if (action === 'brief') {
+      go('brief');
+      if (where) {
+        briefWhere.value = where;
+        setTimeout(() => btnBrief.click(), 50);
       }
-    }, 800);
+    }
   }
+
+  // Wait briefly for the auth handshake to complete before navigating.
+  setTimeout(applyOnLogin, 800);
 })();
 
 // ---------- service worker ----------
