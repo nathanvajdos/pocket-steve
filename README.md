@@ -3,7 +3,8 @@
 A memory trigger for the people you meet. Working title: Steve, after the conversation that started it.
 
 **Live:** https://memory-trigger.vercel.app  
-**Whitepaper:** [docs/whitepaper.md](./docs/whitepaper.md)
+**Whitepaper:** [docs/whitepaper.md](./docs/whitepaper.md)  
+**North Star (decision rubric):** [docs/STEVE_NORTH_STAR.md](./docs/STEVE_NORTH_STAR.md) — read this before any product call. The Steve Arbiter subagent (`.claude/agents/steve-arbiter.md`) reads it on every fork.
 
 You meet someone interesting at the school carnival or the park. You talk into your phone for 20 seconds: *"Met a couple at the carnival, kid Malachi, dog Otis, from California, all tatted up."* The app pulls out the structured pieces and saves them to your account. Before your next event in that location, the app emails you a memory trigger — names, kids, pets, distinctive details — enough to spark your own memory before you walk in.
 
