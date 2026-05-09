@@ -663,19 +663,29 @@ btnSave.addEventListener('click', async () => {
     }
 
     if (match) {
-      // Pause on match — let user choose merge vs. new.
+      // Pause on match — let user choose merge vs. new. This is a high-stakes
+      // decision (wrong merge auto-creates confused timeline; wrong new just
+      // creates a duplicate the user can clean up), so surface the evidence
+      // prominently rather than burying it in muted italics.
       captureResult.innerHTML = '';
       const promptCard = document.createElement('div');
-      promptCard.className = 'card match-card';
+      promptCard.className = 'match-card';
+      const confLabel = match.confidence === 'high' ? 'Strong match' : match.confidence === 'medium' ? 'Likely match' : 'Possible match';
+      const metaBits = [];
+      if (match.entry.where_met) metaBits.push(escapeHtml(match.entry.where_met));
+      metaBits.push('first met ' + formatWhen(match.entry.created_at));
       promptCard.innerHTML = `
-        <div class="where">Looks like someone you've met before</div>
-        <h3>${escapeHtml(match.entry.headline || 'Existing person')}</h3>
-        <div class="summary">${escapeHtml(match.entry.summary || '')}</div>
-        <div class="meta">First met: ${formatWhen(match.entry.created_at)}${match.entry.where_met ? ' · ' + escapeHtml(match.entry.where_met) : ''}</div>
-        <div class="match-reason">${escapeHtml(match.reason)}</div>
-        <div class="actions-row">
-          <button class="chip chip-primary" data-merge-action="attach">Add to this person</button>
-          <button class="chip" data-merge-action="new">No, save as new</button>
+        <div class="match-card-eyebrow">${confLabel} &middot; same person?</div>
+        <h3 class="match-card-headline">${escapeHtml(match.entry.headline || 'Someone you met before')}</h3>
+        <div class="match-card-summary">${escapeHtml(match.entry.summary || '')}</div>
+        <div class="match-card-meta">${metaBits.join(' &middot; ')}</div>
+        <div class="match-card-evidence">
+          <div class="match-card-evidence-label">Why I think it&rsquo;s the same person</div>
+          <div class="match-card-evidence-body">${escapeHtml(match.reason || 'Multiple distinctive details overlap.')}</div>
+        </div>
+        <div class="match-card-actions">
+          <button class="btn-primary" data-merge-action="attach">Yes, add to this person</button>
+          <button class="link-button match-card-decline" data-merge-action="new">No, save as someone new</button>
         </div>
       `;
       captureResult.appendChild(promptCard);

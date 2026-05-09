@@ -590,16 +590,85 @@ textarea:focus, input:focus {
 
 /* ---- match prompt + note count + timeline ---- */
 
+/* ---- Match-and-merge prompt card (high-stakes decision moment) ----
+   Replaces the heavy single-card layout with a focused "is this the
+   same person?" card. The evidence (model's reason) is now a callout
+   block, not muted italics, because it's what the user uses to decide. */
+
 .match-card {
-  border-color: rgba(255, 184, 77, 0.5);
-  background: linear-gradient(180deg, rgba(255, 184, 77, 0.08), var(--surface) 70%);
-}
-.match-reason {
-  color: var(--muted);
-  font-size: 13px;
+  background: linear-gradient(180deg, rgba(255, 184, 77, 0.10) 0%, var(--surface) 70%);
+  border: 1px solid rgba(255, 184, 77, 0.45);
+  border-radius: var(--radius);
+  padding: 22px 22px 20px;
   margin-top: 8px;
-  font-style: italic;
+  animation: fadeUp 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+.match-card-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.match-card-headline {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--text);
+}
+.match-card-summary {
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+.match-card-meta {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.match-card-evidence {
+  margin: 16px 0 18px;
+  padding: 12px 14px;
+  background: rgba(0,0,0,0.18);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+}
+.match-card-evidence-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.match-card-evidence-body {
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.match-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+}
+.match-card-actions .btn-primary {
+  margin-top: 0;
+}
+.match-card-decline {
+  align-self: center;
+  margin-top: 4px;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.match-card-decline:hover { color: var(--text); }
 
 .note-badge {
   display: inline-block;
