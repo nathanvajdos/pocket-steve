@@ -228,12 +228,16 @@
     <section id="view-settings" class="view">
       <header class="bar">
         <button class="back" data-go="home">&larr;</button>
-        <h2>Settings</h2>
       </header>
 
-      <div class="row">
-        <label>Calendar nudges</label>
-        <p class="prompt-text">When I see an upcoming event in your calendar that matches a place where you've met someone, I'll email you the memory trigger 30 minutes before.</p>
+      <div class="settings-hero">
+        <h2 class="settings-h">Settings</h2>
+        <p class="settings-tag">Connect a calendar. Invite a friend. Manage your account.</p>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-label">Calendar nudges</div>
+        <p class="settings-section-desc">When I see an upcoming event in your calendar that matches a place where you&rsquo;ve met someone, I&rsquo;ll email you the memory trigger 30 minutes before.</p>
 
         <!-- Microsoft / Outlook one-click -->
         <div id="ms-card" class="connection-card">
@@ -283,18 +287,18 @@
         <div id="settings-status"></div>
       </div>
 
-      <div class="row" style="margin-top:32px;">
-        <label>Invite someone to Steve</label>
-        <p class="prompt-text">Send a friend a one-tap sign-in link. They click it and they're in &mdash; no password, no signup form.</p>
+      <div class="settings-section">
+        <div class="settings-section-label">Invite someone</div>
+        <p class="settings-section-desc">Send a friend a one-tap sign-in link. They click it and they&rsquo;re in &mdash; no password, no signup form.</p>
         <input id="invite-email" type="email" placeholder="friend@example.com" autocomplete="off" inputmode="email" />
         <input id="invite-name" type="text" placeholder="Their first name (optional)" autocomplete="off" style="margin-top:6px;" />
-        <textarea id="invite-message" rows="2" placeholder="Optional note (&quot;Steve, this is the app from the parking lot.&quot;)" style="margin-top:6px;"></textarea>
+        <textarea id="invite-message" rows="2" placeholder="Optional note (&quot;This is the memory app from the parking lot.&quot;)" style="margin-top:6px;"></textarea>
         <button class="btn-primary" id="btn-send-invite" style="margin-top:10px;">Send sign-in link</button>
         <div id="invite-status"></div>
       </div>
 
-      <div class="row" style="margin-top:32px;">
-        <label>Account</label>
+      <div class="settings-section settings-section-account">
+        <div class="settings-section-label">Account</div>
         <p class="prompt-text">
           <span id="settings-email" style="color:var(--text);">—</span>
           <span id="settings-anon-pill" hidden style="display:inline-block;background:rgba(255,184,77,0.15);color:var(--accent);border:1px solid rgba(255,184,77,0.4);border-radius:999px;padding:2px 8px;font-size:11px;margin-left:6px;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">anon</span>
