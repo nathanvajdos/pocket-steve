@@ -853,6 +853,14 @@ btnBrief.addEventListener('click', async () => {
       speakBtn.addEventListener('click', () => speakBriefing(briefingText, speakBtn));
       briefResult.appendChild(card);
     });
+
+    // Bring the cards into view — on a phone, the brief input + button +
+    // fineprint already fill the visible area, so the matches render below
+    // the fold. The recall moment dies if Steve has to hunt for the spark.
+    // Mirrors the capture-screen pattern shipped in v1.7.6.
+    try {
+      briefResult.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (_) { /* older browsers — no-op */ }
   } catch (err) {
     const f = friendlyError(err, "I couldn't bring them to mind right now.");
     flash(briefResult, f.text, 'error');
