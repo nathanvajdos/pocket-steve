@@ -14,6 +14,9 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
+  <!-- Shared autocomplete list — populated from the user's saved places.
+       Both capture-where and brief-where reference it via list="places". -->
+  <datalist id="places"></datalist>
   <main id="app">
 
     <!-- Login screen — shown when no session -->
@@ -163,13 +166,13 @@
         <div class="capture-details-body">
           <div class="row">
             <label>Where did this happen?</label>
-            <input id="capture-where" type="text" placeholder="e.g. Elementary School Carnival" />
+            <input id="capture-where" type="text" list="places" autocomplete="off" placeholder="e.g. Elementary School Carnival" />
             <p class="row-hint">This is what I&rsquo;ll match against next time you say &ldquo;Heading somewhere?&rdquo;</p>
           </div>
           <div class="row">
             <label>When might you see them next?</label>
             <input id="capture-next-at" type="datetime-local" />
-            <input id="capture-next-where" type="text" placeholder="Same place, or different?" style="margin-top:6px;" />
+            <input id="capture-next-where" type="text" list="places" autocomplete="off" placeholder="Same place, or different?" style="margin-top:6px;" />
             <p class="row-hint">If you set this, I&rsquo;ll surface them on your home screen the week of, and remind you 30 min before.</p>
           </div>
         </div>
@@ -186,7 +189,7 @@
         <h2>Heading somewhere?</h2>
       </header>
       <p class="prompt-text">Type the place or event. I'll pull up the people you've met there.</p>
-      <input id="brief-where" type="text" placeholder="e.g. Elementary School" />
+      <input id="brief-where" type="text" list="places" autocomplete="off" placeholder="e.g. Elementary School" />
       <button class="btn-primary" id="btn-brief">Pull up the people</button>
       <div id="brief-result"></div>
     </section>

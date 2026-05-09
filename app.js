@@ -65,6 +65,35 @@ function go(view) {
   if (view === 'home') renderTopOfMind();
 }
 
+// ---------- shared place autocomplete (datalist#places) ----------
+//
+// Populated from the user's saved entries so typing into any "where" field
+// surfaces the places they've already used. Reduces typos that would otherwise
+// break the fuzzy briefing match, and lets Steve feel like he knows their
+// world. Browser-native datalist for graceful behavior on every platform.
+
+function refreshPlacesDatalist(entries) {
+  const dl = document.getElementById('places');
+  if (!dl || !Array.isArray(entries)) return;
+  const seen = new Set();
+  const places = [];
+  for (const e of entries) {
+    const candidates = [e.where_met, e.next_likely_where];
+    for (const c of candidates) {
+      if (!c) continue;
+      const key = String(c).trim();
+      if (!key) continue;
+      const k = key.toLowerCase();
+      if (seen.has(k)) continue;
+      seen.add(k);
+      places.push(key);
+    }
+  }
+  // Sort by length-then-alpha so common short places come first
+  places.sort((a, b) => a.length - b.length || a.localeCompare(b));
+  dl.innerHTML = places.map(p => `<option value="${escapeAttr(p)}"></option>`).join('');
+}
+
 // ---------- Top of mind: proactive surface on home screen ----------
 //
 // Shows the user upcoming/recently-relevant people without making them
@@ -86,6 +115,7 @@ async function renderTopOfMind() {
     const r = await fetchAuth('/api/entries', { method: 'GET' });
     if (!r.ok) return;
     const { entries } = await r.json();
+    refreshPlacesDatalist(entries || []);
     if (!entries || !entries.length) return;
 
     const now = Date.now();
@@ -822,6 +852,7 @@ async function renderLibrary() {
   const r = await fetchAuth('/api/entries', { method: 'GET' });
   if (!r.ok) { list.innerHTML = '<div class="error">Could not load.</div>'; return; }
   const { entries } = await r.json();
+  refreshPlacesDatalist(entries);
   if (!entries.length) {
     list.innerHTML = '<div class="empty">No one saved yet.</div>';
     return;
