@@ -1,33 +1,12 @@
-// Vercel serverless function — turns a photo of a name tag, business card,
-// or person into structured fields. Uses Gemini 2.5 Flash with vision.
-//
-// Body: { imageBase64: "<base64 data, no data: prefix>", mimeType: "image/jpeg", text?: "<any voice memo to combine>" }
-// Returns same shape as /api/extract.
+// /api/extract-photo — photo (name tag, business card, person) → structured fields.
+// Routed via _models.js. Vision-capable providers (Gemini, OpenAI gpt-4o-mini)
+// can handle this. Default routing: MODEL_PHOTO=gemini,openai.
 
-const MODEL = 'gemini-2.5-flash';
-const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+import { complete } from './_models.js';
 
-const MAX_IMAGE_BYTES = 6 * 1024 * 1024; // ~6MB hard cap for serverless body
+const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-
-  const { imageBase64, mimeType, text } = req.body || {};
-  if (!imageBase64 || typeof imageBase64 !== 'string') {
-    return res.status(400).json({ error: 'imageBase64 required' });
-  }
-  if (imageBase64.length > MAX_IMAGE_BYTES * 1.4) {
-    return res.status(413).json({ error: 'Image too large after compression. Try again — should be under 5MB.' });
-  }
-  const mt = (mimeType || 'image/jpeg').toLowerCase();
-  if (!['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'].includes(mt)) {
-    return res.status(400).json({ error: 'Unsupported image type: ' + mt });
-  }
-
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not set' });
-
-  const systemInstruction = `You extract structured details from a photo a user took at an event. The photo could be:
+const SYSTEM = `You extract structured details from a photo a user took at an event. The photo could be:
 - A name tag or conference badge
 - A business card
 - A person (sometimes both — a person wearing a name tag)
@@ -50,9 +29,22 @@ Return ONLY valid JSON matching this shape, no preamble:
 
 If a field has no info, use an empty string or empty array. Never invent details. If the image is unreadable or off-topic, return empty fields with a 'raw_text' note explaining what you saw.`;
 
-  const userParts = [
-    { inlineData: { mimeType: mt, data: imageBase64 } }
-  ];
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+
+  const { imageBase64, mimeType, text } = req.body || {};
+  if (!imageBase64 || typeof imageBase64 !== 'string') {
+    return res.status(400).json({ error: 'imageBase64 required' });
+  }
+  if (imageBase64.length > MAX_IMAGE_BYTES * 1.4) {
+    return res.status(413).json({ error: 'Image too large after compression. Try again — should be under 5MB.' });
+  }
+  const mt = (mimeType || 'image/jpeg').toLowerCase();
+  if (!['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'].includes(mt)) {
+    return res.status(400).json({ error: 'Unsupported image type: ' + mt });
+  }
+
+  const userParts = [{ inlineData: { mimeType: mt, data: imageBase64 } }];
   if (text && text.trim()) {
     userParts.push({ text: `Optional voice memo from the user: "${text.trim()}"` });
   } else {
@@ -60,33 +52,16 @@ If a field has no info, use an empty string or empty array. Never invent details
   }
 
   try {
-    const r = await fetch(`${ENDPOINT}?key=${encodeURIComponent(apiKey)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        contents: [{ role: 'user', parts: userParts }],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 900,
-          responseMimeType: 'application/json'
-        }
-      })
+    const parsed = await complete({
+      task: 'photo',
+      system: SYSTEM,
+      user: userParts,
+      json: true,
+      temperature: 0.2,
+      maxTokens: 900
     });
-
-    if (!r.ok) {
-      const errText = await r.text();
-      return res.status(502).json({ error: 'Gemini call failed', detail: errText });
-    }
-
-    const data = await r.json();
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-    let parsed;
-    try { parsed = JSON.parse(raw); }
-    catch { return res.status(502).json({ error: 'Model returned non-JSON', raw }); }
-
     return res.status(200).json(parsed);
   } catch (err) {
-    return res.status(500).json({ error: err.message || 'photo extraction failed' });
+    return res.status(502).json({ error: err.message || 'photo extraction failed', raw: err.raw });
   }
 }

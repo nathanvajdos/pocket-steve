@@ -139,7 +139,29 @@ No personal CRM does this. The closest analog is Dex's pre-meeting briefs, which
 
 Tooling: Microsoft Graph + Google Calendar OAuth + .ics share URL fallback. Already scaffolded in the v1 codebase.
 
-### 4.4 Privacy as positioning
+### 4.4 Multi-model routing (the model is not the product)
+
+Pocket Steve does not commit to a single language model. The codebase has a thin routing layer (`api/_models.js`) that exposes one function — `complete({ task, system, user, json })` — and dispatches to whichever provider serves that task best.
+
+| Task | Default routing | Why |
+|---|---|---|
+| `extract` (voice memo → fields) | Gemini 2.5 Flash | High volume, cheap, fast. Gemini is excellent at structured extraction. |
+| `brief` (memory-trigger prose) | `anthropic,gemini` | The user-facing moment of truth. Claude writes warmer, more memorable prose. Falls back to Gemini if no Anthropic key. |
+| `match` (is this the same person?) | `gemini,openai` | Conservative judgment task; either provider works. |
+| `photo` (Vision OCR) | `gemini,openai` | Both providers are vision-capable. |
+| `linkedin` (URL/text → fields) | `gemini,anthropic` | Anthropic is good at parsing semi-structured profile prose. |
+| `calendar` (event ↔ entry matching, in cron) | Gemini | Latency-tolerant batch job; cheapest provider wins. |
+
+Routing is configurable per task via env vars (`MODEL_BRIEF=anthropic,gemini`), so quality vs. cost trade-offs can be tuned without code changes. New providers (Cerebras, Groq, DeepSeek, Mistral, on-device Apple Foundation Models) drop in as additional adapters.
+
+This is a moat in two senses:
+
+1. **Resilience.** When any one provider has an outage, rate-limits us, raises prices, or degrades quality, we route around it without code changes. Single-provider competitors take an outage with their provider.
+2. **Quality routing.** Each task in the product has different latency, cost, and quality requirements. Locking to one model leaves quality on the table for high-stakes tasks (briefings) or money on the table for high-volume tasks (extraction). Per-task routing extracts the maximum value from the model market as it evolves month-to-month.
+
+The product is "a memory trigger for the people you meet," not "an app powered by Gemini." That distinction is the whole point.
+
+### 4.5 Privacy as positioning
 
 Every personal CRM competitor positions itself in some "professional networking" frame. Pocket Steve's positioning — *the parent at the elementary school carnival* — is emotionally distinct. We're not selling lead generation; we're selling presence. That has marketing implications:
 

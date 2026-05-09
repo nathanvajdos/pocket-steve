@@ -1,24 +1,10 @@
-// Vercel serverless function — turns a raw voice/text dump into structured data.
-// Steve says: "Met a couple at the school carnival, dog Otis, kid Malachi..."
-// We return: { headline, summary, names, kids, pets, traits, where }
-//
-// Calls Gemini 2.5 Flash via the Google AI REST API. No SDK needed.
+// /api/extract — voice/text dump → structured fields.
+// Routed via _models.js so the underlying provider can be swapped per-task
+// via env vars (see _models.js docstring). Default is Gemini 2.5 Flash.
 
-const MODEL = 'gemini-2.5-flash';
-const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+import { complete } from './_models.js';
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-
-  const { text, where } = req.body || {};
-  if (!text || typeof text !== 'string') {
-    return res.status(400).json({ error: 'text required' });
-  }
-
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not set' });
-
-  const systemInstruction = `You extract structured details from a person's quick voice memo about people they just met.
+const SYSTEM = `You extract structured details from a person's quick voice memo about people they just met.
 
 Return ONLY valid JSON matching this exact shape, no preamble:
 {
@@ -33,36 +19,27 @@ Return ONLY valid JSON matching this exact shape, no preamble:
 
 If a field has no info, use an empty string or empty array. Never invent details. Be terse.`;
 
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+
+  const { text, where } = req.body || {};
+  if (!text || typeof text !== 'string') {
+    return res.status(400).json({ error: 'text required' });
+  }
+
   const userPrompt = `Voice memo: "${text}"\n\nUser-provided "where" (may be empty): "${where || ''}"\n\nReturn the JSON now.`;
 
   try {
-    const r = await fetch(`${ENDPOINT}?key=${encodeURIComponent(apiKey)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 800,
-          responseMimeType: 'application/json'
-        }
-      })
+    const parsed = await complete({
+      task: 'extract',
+      system: SYSTEM,
+      user: userPrompt,
+      json: true,
+      temperature: 0.2,
+      maxTokens: 800
     });
-
-    if (!r.ok) {
-      const errText = await r.text();
-      return res.status(502).json({ error: 'Gemini call failed', detail: errText });
-    }
-
-    const data = await r.json();
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-    let parsed;
-    try { parsed = JSON.parse(raw); }
-    catch { return res.status(502).json({ error: 'Model returned non-JSON', raw }); }
-
     return res.status(200).json(parsed);
   } catch (err) {
-    return res.status(500).json({ error: err.message || 'extraction failed' });
+    return res.status(502).json({ error: err.message || 'extraction failed', raw: err.raw });
   }
 }

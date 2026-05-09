@@ -5,9 +5,7 @@
 // best match + confidence so the frontend can prompt the user.
 
 import { requireUser } from '../_supabase.js';
-
-const MODEL = 'gemini-2.5-flash';
-const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+import { complete } from '../_models.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
@@ -50,10 +48,6 @@ export default async function handler(req, res) {
   const top = candidates.filter(overlaps);
   const pool = top.length ? top : candidates.slice(0, 25);
 
-  // Build a compact judging prompt for Gemini.
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not set' });
-
   const newPerson = {
     headline: headline || '',
     summary: summary || '',
@@ -92,27 +86,14 @@ Be strict about high confidence. False merges are worse than missed merges; user
   )}\n\nReturn the JSON now.`;
 
   try {
-    const r = await fetch(`${ENDPOINT}?key=${encodeURIComponent(apiKey)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 400,
-          responseMimeType: 'application/json'
-        }
-      })
+    const parsed = await complete({
+      task: 'match',
+      system: systemInstruction,
+      user: userPrompt,
+      json: true,
+      temperature: 0.1,
+      maxTokens: 400
     });
-    if (!r.ok) {
-      const errText = await r.text();
-      return res.status(502).json({ error: 'Gemini call failed', detail: errText });
-    }
-    const data = await r.json();
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-    let parsed;
-    try { parsed = JSON.parse(raw); } catch { parsed = {}; }
 
     if (!parsed.match_id) return res.status(200).json({ match: null });
     const matched = candidates.find(c => c.id === parsed.match_id);

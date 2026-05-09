@@ -12,9 +12,7 @@ import { serviceClient } from './_supabase.js';
 import { parseIcs, eventsInWindow } from './_ics.js';
 import { sendEmail } from './_email.js';
 import { getValidAccessToken, fetchEventsInWindow } from './_microsoft.js';
-
-const GEMINI_MODEL = 'gemini-2.5-flash';
-const GEMINI_ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+import { complete } from './_models.js';
 
 export default async function handler(req, res) {
   // When CRON_SECRET is set, Vercel Cron sends "Authorization: Bearer $CRON_SECRET".
@@ -131,9 +129,6 @@ export default async function handler(req, res) {
 }
 
 async function askGeminiForMatches(events, entries) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error('GEMINI_API_KEY not set');
-
   const eventList = events.map((e, i) => ({
     index: i,
     uid: e.uid,
@@ -167,23 +162,15 @@ Empty matches array if nothing fits.`;
 
   const userPrompt = `Upcoming events:\n${JSON.stringify(eventList, null, 2)}\n\nPast meetings:\n${JSON.stringify(entryList, null, 2)}\n\nReturn the JSON now.`;
 
-  const r = await fetch(`${GEMINI_ENDPOINT}?key=${encodeURIComponent(apiKey)}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: systemInstruction }] },
-      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-      generationConfig: {
-        temperature: 0.2,
-        maxOutputTokens: 2000,
-        responseMimeType: 'application/json'
-      }
-    })
+  const parsed = await complete({
+    task: 'calendar',
+    system: systemInstruction,
+    user: userPrompt,
+    json: true,
+    temperature: 0.2,
+    maxTokens: 2000
   });
-  if (!r.ok) throw new Error('Gemini matching failed: ' + (await r.text()));
-  const data = await r.json();
-  const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '{"matches":[]}';
-  try { return JSON.parse(raw).matches || []; } catch { return []; }
+  return parsed?.matches || [];
 }
 
 function emailBody({ event, entry, briefing }) {

@@ -5,8 +5,7 @@
 // At least one of url/text is required. If both are provided, both are
 // included in the prompt (URL fetch as primary, text as fallback/extra).
 
-const MODEL = 'gemini-2.5-flash';
-const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+import { complete } from './_models.js';
 
 const FETCH_HEADERS = {
   'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
@@ -27,9 +26,6 @@ export default async function handler(req, res) {
   if (!cleanUrl && !cleanText) {
     return res.status(400).json({ error: 'url or text required' });
   }
-
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not set' });
 
   // 1. If a URL was provided, try to fetch its public content.
   let fetched = null;
@@ -87,34 +83,20 @@ If a field has no info, use an empty string or empty array. Never invent details
   }
 
   try {
-    const r = await fetch(`${ENDPOINT}?key=${encodeURIComponent(apiKey)}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        contents: [{ role: 'user', parts }],
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 900,
-          responseMimeType: 'application/json'
-        }
-      })
+    const parsed = await complete({
+      task: 'linkedin',
+      system: systemInstruction,
+      user: parts,
+      json: true,
+      temperature: 0.2,
+      maxTokens: 900
     });
-    if (!r.ok) {
-      const errText = await r.text();
-      return res.status(502).json({ error: 'Gemini call failed', detail: errText });
-    }
-    const data = await r.json();
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-    let parsed;
-    try { parsed = JSON.parse(raw); }
-    catch { return res.status(502).json({ error: 'Model returned non-JSON', raw }); }
     if (cleanUrl && !parsed.linkedin_url) parsed.linkedin_url = cleanUrl;
     if (fetchNote) parsed._fetchNote = fetchNote;
 
     return res.status(200).json(parsed);
   } catch (err) {
-    return res.status(500).json({ error: err.message || 'linkedin enrich failed' });
+    return res.status(502).json({ error: err.message || 'linkedin enrich failed', raw: err.raw });
   }
 }
 
