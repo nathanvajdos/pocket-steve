@@ -14,36 +14,132 @@
 //   MODEL_CALENDAR    — for /api/calendar-scan event matching
 //   MODEL_DEFAULT     — fallback for any task without a specific override
 //
-// Defaults (when no env override): Gemini 2.5 Flash for everything.
+// Defaults (when no env override): see DEFAULTS_BY_TASK below.
 //
 // Quality-routing recipe: set `MODEL_BRIEF=anthropic,gemini` to use Claude
 // for the user-facing memory-trigger prose with Gemini as fallback.
-// Cost-routing recipe: keep MODEL_EXTRACT=gemini for the high-volume
-// extraction call; only upgrade the user-visible briefing.
+// Cost-routing recipe: keep MODEL_EXTRACT=cerebras,gemini for the high-volume
+// extraction call; Cerebras runs Llama 3.3 70B at sub-second latency for free.
 
 const ADAPTERS = {
+  // First-party adapters (each provider's own native API)
   gemini: geminiComplete,
   anthropic: anthropicComplete,
-  openai: openaiComplete,
-  cerebras: cerebrasComplete
+  // OpenAI-compatible chat APIs (most modern providers expose this)
+  openai:     (opts) => openaiCompatible(opts, OPENAI),
+  cerebras:   (opts) => openaiCompatible(opts, CEREBRAS),
+  groq:       (opts) => openaiCompatible(opts, GROQ),
+  deepseek:   (opts) => openaiCompatible(opts, DEEPSEEK),
+  mistral:    (opts) => openaiCompatible(opts, MISTRAL),
+  kimi:       (opts) => openaiCompatible(opts, KIMI),
+  perplexity: (opts) => openaiCompatible(opts, PERPLEXITY),
+  xai:        (opts) => openaiCompatible(opts, XAI)
 };
 
 const HAS_KEY = {
-  gemini: () => !!process.env.GEMINI_API_KEY,
-  anthropic: () => !!process.env.ANTHROPIC_API_KEY,
-  openai: () => !!process.env.OPENAI_API_KEY,
-  cerebras: () => !!process.env.CEREBRAS_API_KEY
+  gemini:     () => !!process.env.GEMINI_API_KEY,
+  anthropic:  () => !!process.env.ANTHROPIC_API_KEY,
+  openai:     () => !!process.env.OPENAI_API_KEY,
+  cerebras:   () => !!process.env.CEREBRAS_API_KEY,
+  groq:       () => !!process.env.GROQ_API_KEY,
+  deepseek:   () => !!process.env.DEEPSEEK_API_KEY,
+  mistral:    () => !!process.env.MISTRAL_API_KEY,
+  kimi:       () => !!process.env.KIMI_API_KEY || !!process.env.MOONSHOT_API_KEY,
+  perplexity: () => !!process.env.PERPLEXITY_API_KEY,
+  xai:        () => !!process.env.XAI_API_KEY
+};
+
+// Provider configs for OpenAI-compatible endpoints.
+// `vision: true` means the provider can accept image parts (inlineData).
+const OPENAI = {
+  label: 'openai',
+  baseUrl: 'https://api.openai.com/v1',
+  authEnv: 'OPENAI_API_KEY',
+  defaultModel: 'gpt-4o-mini',
+  jsonMode: 'response_format', // standard OpenAI JSON mode
+  vision: true
+};
+const CEREBRAS = {
+  label: 'cerebras',
+  baseUrl: 'https://api.cerebras.ai/v1',
+  authEnv: 'CEREBRAS_API_KEY',
+  defaultModel: 'llama-3.3-70b',
+  jsonMode: 'response_format',
+  vision: false
+};
+const GROQ = {
+  label: 'groq',
+  baseUrl: 'https://api.groq.com/openai/v1',
+  authEnv: 'GROQ_API_KEY',
+  defaultModel: 'llama-3.3-70b-versatile',
+  jsonMode: 'response_format',
+  vision: false
+};
+const DEEPSEEK = {
+  label: 'deepseek',
+  baseUrl: 'https://api.deepseek.com/v1',
+  authEnv: 'DEEPSEEK_API_KEY',
+  defaultModel: 'deepseek-chat',
+  jsonMode: 'response_format',
+  vision: false
+};
+const MISTRAL = {
+  label: 'mistral',
+  baseUrl: 'https://api.mistral.ai/v1',
+  authEnv: 'MISTRAL_API_KEY',
+  defaultModel: 'mistral-small-latest',
+  jsonMode: 'response_format',
+  vision: false
+};
+const KIMI = {
+  // Kimi K2 from Moonshot AI. The international endpoint is api.moonshot.ai;
+  // the .cn endpoint also exists for China region. Either env var works.
+  label: 'kimi',
+  baseUrl: 'https://api.moonshot.ai/v1',
+  authEnv: ['KIMI_API_KEY', 'MOONSHOT_API_KEY'],
+  defaultModel: 'moonshot-v1-32k',
+  jsonMode: 'response_format',
+  vision: false
+};
+const PERPLEXITY = {
+  // Perplexity's Sonar models include built-in web search — useful for tasks
+  // where current web context matters (LinkedIn enrichment, person research).
+  label: 'perplexity',
+  baseUrl: 'https://api.perplexity.ai',
+  authEnv: 'PERPLEXITY_API_KEY',
+  defaultModel: 'sonar',
+  jsonMode: 'response_format',
+  vision: false
+};
+const XAI = {
+  label: 'xai',
+  baseUrl: 'https://api.x.ai/v1',
+  authEnv: 'XAI_API_KEY',
+  defaultModel: 'grok-4',
+  jsonMode: 'response_format',
+  vision: true
 };
 
 const DEFAULTS_BY_TASK = {
-  brief: 'anthropic,gemini',                 // user-facing prose: Claude if available
-  extract: 'cerebras,gemini',                // high-volume + text-only: fast Llama wins when free
-  match: 'cerebras,gemini,openai',           // judgment task; text-only — pick fast
-  photo: 'gemini,openai',                    // vision required; Cerebras has no vision today
-  linkedin: 'cerebras,gemini,anthropic',     // text-only after HTML strip
-  calendar: 'cerebras,gemini',               // batch cron, latency-tolerant but free fast > free slow
-  default: 'gemini'
+  // user-facing prose: prefer Claude (warm), fall through to high-quality models, end with free Gemini
+  brief:    'anthropic,kimi,deepseek,gemini',
+  // high-volume + text-only: fastest free inference first, then quality, then guaranteed-free Gemini
+  extract:  'cerebras,groq,gemini,deepseek',
+  // judgment task: any reasoning model. Free fast first.
+  match:    'cerebras,groq,gemini,openai',
+  // vision required; only providers with vision support
+  photo:    'gemini,openai,xai',
+  // text-only after HTML strip; Perplexity gets a slot here because the web-search
+  // capability can backfill profile info when the URL was gated
+  linkedin: 'cerebras,gemini,perplexity,anthropic',
+  // batch cron, latency-tolerant, prefer cheap+fast
+  calendar: 'cerebras,gemini,deepseek',
+  default:  'gemini'
 };
+
+// ====================================================================
+//  Public API
+// ====================================================================
 
 export async function complete(opts) {
   const task = opts.task || 'default';
@@ -56,23 +152,26 @@ export async function complete(opts) {
     if (!HAS_KEY[name]()) continue;
     tried.push(name);
     try {
-      return await ADAPTERS[name](opts);
+      const result = await ADAPTERS[name](opts);
+      result.__provider = name;   // stamp so callers can attribute (used in benchmarks)
+      return strip(result);
     } catch (err) {
       lastErr = err;
       console.warn(`[_models] task=${task} provider=${name} failed: ${err.message}. Trying next.`);
     }
   }
 
-  // Last-resort: if every available provider failed AND at least one error
-  // was a rate-limit (429), wait the suggested retry-after (capped) and try
-  // the providers again once. This handles bursts without leaking 502s up to
-  // users when no alternate provider key is configured.
+  // If every available provider failed AND any of them was a 429, parse the
+  // suggested retry-after, sleep up to 5s (capped to fit Vercel Hobby's 10s
+  // function timeout), and retry the same providers once more.
   if (tried.length && lastErr && /\b429\b/.test(String(lastErr.message))) {
     const retryMs = Math.min(parseRetryAfterMs(lastErr.message) ?? 1500, 5000);
     await sleep(retryMs);
     for (const name of tried) {
       try {
-        return await ADAPTERS[name](opts);
+        const result = await ADAPTERS[name](opts);
+        result.__provider = name;
+        return strip(result);
       } catch (err) {
         lastErr = err;
       }
@@ -82,14 +181,8 @@ export async function complete(opts) {
   throw lastErr || new Error(`No usable model provider for task=${task} (set GEMINI_API_KEY at minimum)`);
 }
 
-function parseRetryAfterMs(msg) {
-  const m = String(msg).match(/retry in ([\d.]+)\s*s/i);
-  if (m) return Math.ceil(parseFloat(m[1]) * 1000);
-  return null;
-}
-
-function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
+export function availableProviders() {
+  return Object.keys(ADAPTERS).filter(name => HAS_KEY[name]());
 }
 
 function providerOrder(task) {
@@ -99,18 +192,21 @@ function providerOrder(task) {
   return fallback.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
 }
 
-// ====================================================================
-//  Adapters
-// ====================================================================
-//
-// Common shape:
-//   complete({
-//     task, system, user, json,        // task = string label, system = string, user = string OR array of parts (for vision)
-//     temperature = 0.2, maxTokens = 800,
-//     model                            // optional override of default model id for this provider
-//   }) -> string (text) or object (when json=true)
+// Strip the __provider tag from text-only results before returning to callers
+// (we only need it for benchmarks; callers shouldn't see it in normal use).
+function strip(result) {
+  if (typeof result === 'string') return result;
+  if (result && typeof result === 'object') {
+    const out = { ...result };
+    delete out.__provider;
+    return out;
+  }
+  return result;
+}
 
-// ----- Gemini -----
+// ====================================================================
+//  Adapters — Gemini and Anthropic use their native APIs
+// ====================================================================
 
 async function geminiComplete({ system, user, json, temperature = 0.2, maxTokens = 800, model = 'gemini-2.5-flash' }) {
   const apiKey = process.env.GEMINI_API_KEY;
@@ -136,11 +232,8 @@ async function geminiComplete({ system, user, json, temperature = 0.2, maxTokens
   return json ? safeJson(text) : text;
 }
 
-// ----- Anthropic Claude -----
-
 async function anthropicComplete({ system, user, json, temperature = 0.2, maxTokens = 800, model = 'claude-haiku-4-5-20251001' }) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  // Convert user-as-parts (vision arrays) to Anthropic content blocks if needed.
   const content = Array.isArray(user)
     ? user.map(p => {
         if (p.text) return { type: 'text', text: p.text };
@@ -151,11 +244,7 @@ async function anthropicComplete({ system, user, json, temperature = 0.2, maxTok
         return null;
       }).filter(Boolean)
     : [{ type: 'text', text: user }];
-
-  // For JSON-shaped tasks we ask for JSON via system prompt + nudge in user prompt.
-  // (Claude doesn't have a strict response_mime_type knob the way Gemini does.)
   const sys = json ? `${system}\n\nReturn ONLY valid JSON. No prose, no markdown fences.` : system;
-
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -175,78 +264,61 @@ async function anthropicComplete({ system, user, json, temperature = 0.2, maxTok
   const data = await r.json();
   const text = data.content?.find(b => b.type === 'text')?.text || '';
   if (!json) return text;
-  // Strip ```json fences if Claude added them
   const clean = text.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '').trim();
   return safeJson(clean);
 }
 
-// ----- OpenAI -----
+// ====================================================================
+//  Shared adapter for OpenAI-compatible chat APIs
+// ====================================================================
+//
+// Used by: openai, cerebras, groq, deepseek, mistral, kimi, perplexity, xai.
+// All of them expose `POST /chat/completions` with the same body shape.
 
-async function openaiComplete({ system, user, json, temperature = 0.2, maxTokens = 800, model = 'gpt-4o-mini' }) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  const messages = [{ role: 'system', content: system }];
+async function openaiCompatible({ system, user, json, temperature = 0.2, maxTokens = 800, model }, cfg) {
+  const apiKey = pickKey(cfg.authEnv);
+  if (!apiKey) throw new Error(`${cfg.label}: no API key configured`);
 
+  // Vision: pass image parts only if this provider supports vision
+  let messages;
   if (Array.isArray(user)) {
-    // Vision content: text + image_url parts (OpenAI format)
-    const content = user.map(p => {
-      if (p.text) return { type: 'text', text: p.text };
-      if (p.inlineData) return {
-        type: 'image_url',
-        image_url: { url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` }
-      };
-      return null;
-    }).filter(Boolean);
-    messages.push({ role: 'user', content });
+    if (cfg.vision) {
+      const content = user.map(p => {
+        if (p.text) return { type: 'text', text: p.text };
+        if (p.inlineData) return {
+          type: 'image_url',
+          image_url: { url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` }
+        };
+        return null;
+      }).filter(Boolean);
+      messages = [{ role: 'system', content: system }, { role: 'user', content }];
+    } else {
+      // Strip image parts; keep text only. If no text, error early.
+      const textOnly = user.filter(p => p.text).map(p => p.text).join('\n\n');
+      if (!textOnly) throw new Error(`${cfg.label}: vision not supported and user content is image-only`);
+      messages = [{ role: 'system', content: system }, { role: 'user', content: textOnly }];
+    }
   } else {
-    messages.push({ role: 'user', content: user });
+    messages = [{ role: 'system', content: system }, { role: 'user', content: user }];
   }
 
+  // JSON mode varies slightly by provider; the OpenAI standard works on
+  // OpenAI/Cerebras/Groq/DeepSeek/Mistral/Kimi/xAI. Perplexity needs slight
+  // tolerance — fall back to "ask for JSON in the prompt" if their endpoint
+  // rejects response_format.
   const body = {
-    model,
+    model: model || cfg.defaultModel,
     messages,
     temperature,
-    max_tokens: maxTokens,
-    ...(json ? { response_format: { type: 'json_object' } } : {})
+    max_tokens: maxTokens
   };
-
-  const r = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify(body)
-  });
-  if (!r.ok) throw new Error(`openai ${r.status}: ${await r.text()}`);
-  const data = await r.json();
-  const text = data.choices?.[0]?.message?.content || '';
-  return json ? safeJson(text) : text;
-}
-
-// ----- Cerebras (Llama on Cerebras CS-3 — fastest free-tier inference) -----
-//
-// OpenAI-compatible chat API. No vision support today (text-only). Perfect
-// for the high-volume `extract` and `match` tasks where latency dominates.
-// Default model: llama-3.3-70b (best free quality). Override with `model`.
-
-async function cerebrasComplete({ system, user, json, temperature = 0.2, maxTokens = 800, model = 'llama-3.3-70b' }) {
-  const apiKey = process.env.CEREBRAS_API_KEY;
-  if (Array.isArray(user)) {
-    // Cerebras text-only — strip image parts and concatenate text.
-    user = user.filter(p => p.text).map(p => p.text).join('\n\n');
-    if (!user) throw new Error('cerebras: no text content (vision not supported)');
+  if (json && cfg.jsonMode === 'response_format') {
+    body.response_format = { type: 'json_object' };
+    // Some providers require the word 'json' in the prompt when using JSON mode.
+    if (!/json/i.test(system)) body.messages[0].content = `${system}\n\nReturn JSON.`;
   }
-  const body = {
-    model,
-    messages: [
-      { role: 'system', content: system },
-      { role: 'user', content: user }
-    ],
-    temperature,
-    max_tokens: maxTokens,
-    ...(json ? { response_format: { type: 'json_object' } } : {})
-  };
-  const r = await fetch('https://api.cerebras.ai/v1/chat/completions', {
+
+  const r = await fetch(`${cfg.baseUrl}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -254,7 +326,7 @@ async function cerebrasComplete({ system, user, json, temperature = 0.2, maxToke
     },
     body: JSON.stringify(body)
   });
-  if (!r.ok) throw new Error(`cerebras ${r.status}: ${await r.text()}`);
+  if (!r.ok) throw new Error(`${cfg.label} ${r.status}: ${await r.text()}`);
   const data = await r.json();
   const text = data.choices?.[0]?.message?.content || '';
   return json ? safeJson(text) : text;
@@ -263,6 +335,14 @@ async function cerebrasComplete({ system, user, json, temperature = 0.2, maxToke
 // ====================================================================
 //  Helpers
 // ====================================================================
+
+function pickKey(envOrEnvs) {
+  if (Array.isArray(envOrEnvs)) {
+    for (const e of envOrEnvs) if (process.env[e]) return process.env[e];
+    return null;
+  }
+  return process.env[envOrEnvs] || null;
+}
 
 function safeJson(text) {
   if (!text) return {};
@@ -275,7 +355,12 @@ function safeJson(text) {
   }
 }
 
-// Public helper so callers can detect available providers (e.g. for UI hints).
-export function availableProviders() {
-  return Object.keys(ADAPTERS).filter(name => HAS_KEY[name]());
+function parseRetryAfterMs(msg) {
+  const m = String(msg).match(/retry in ([\d.]+)\s*s/i);
+  if (m) return Math.ceil(parseFloat(m[1]) * 1000);
+  return null;
+}
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
 }

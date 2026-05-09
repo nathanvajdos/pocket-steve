@@ -161,7 +161,18 @@ This is a moat in two senses:
 
 The product is "a memory trigger for the people you meet," not "an app powered by Gemini." That distinction is the whole point.
 
-### 4.5 Privacy as positioning
+### 4.5 Validation methodology — every claim must be testable
+
+Two epistemic standards govern this whitepaper:
+
+1. **Competitive differentiators are defended by peer-reviewed cognitive science**, not by founder intuition. Section 5 lists each differentiator alongside the specific psychological mechanism it implements and the original-source citation. If a future iteration cannot point to a defensible mechanism, it doesn't ship.
+2. **Model-level claims are defended by reproducible benchmarks**, not by vendor marketing. The benchmark harness at `scripts/benchmark.mjs` runs Pocket Steve's actual production tasks (extract, brief, match, linkedin, calendar) against every provider with an API key configured, captures latency + output validity, and writes a timestamped report to `docs/benchmarks/`. Anyone with the repo can reproduce a run and audit the routing decisions.
+
+The benchmark harness deliberately does **not** use an LLM-as-judge for quality grading — quality of memory-trigger prose is a human judgment, not a model judgment, and using a model to grade other models is a known source of self-reinforcing bias ([Zheng et al., 2023](https://arxiv.org/abs/2306.05685)). Latency and output validity (does the JSON parse? do the expected fields exist?) are machine-graded; qualitative output samples are written into the report for human side-by-side comparison.
+
+The provider roster currently includes: **Gemini, Anthropic Claude, OpenAI, Cerebras (Llama), Groq (Llama), DeepSeek, Mistral, Kimi K2 (Moonshot), Perplexity (Sonar with web search), and xAI Grok.** Each routes through the same `complete()` function via a shared OpenAI-compatible adapter, so adding the next provider is a 5-line config block. Providers without a configured API key are skipped silently.
+
+### 4.6 Privacy as positioning
 
 Every personal CRM competitor positions itself in some "professional networking" frame. Pocket Steve's positioning — *the parent at the elementary school carnival* — is emotionally distinct. We're not selling lead generation; we're selling presence. That has marketing implications:
 
@@ -171,7 +182,26 @@ Every personal CRM competitor positions itself in some "professional networking"
 
 ---
 
-## 5. Where we win, where we are vulnerable
+## 5. Each competitive differentiator, scientifically defended
+
+Every claim in the table below maps a Pocket Steve design choice to the peer-reviewed cognitive-science result that justifies it. If a competitor copies any one row, the moat survives because the *combination* — captured cheaply via voice/photo, indexed by place, surfaced proactively, threaded by person, encoded richly across multiple modalities — is what compounds.
+
+| Differentiator | Mechanism | Original source |
+|---|---|---|
+| **Place-as-primary index (`where_met`)** | Encoding-specificity principle: recall is best when retrieval cues match encoding cues. Place is a high-associative cue, more reliable than time-since-contact. | Tulving & Thomson (1973), *Encoding specificity and retrieval processes in episodic memory.* Psychological Review, 80(5), 352–373. |
+| **Pre-event "Heading somewhere?" briefing** | Cue-dependent retrieval + recognition memory. Recognition (>90% accuracy) outperforms free recall in field settings; the briefing converts the moment of arrival into a recognition task. | Tulving & Pearlstone (1966), *Availability vs. accessibility of information in memory.* Journal of Verbal Learning and Verbal Behavior, 5, 381–391. |
+| **Voice + photo dual capture** | Dual-coding theory: simultaneous verbal and visual encoding produces stronger, more durable memory traces than either modality alone. Photo-OCR gives the visual; voice gives the elaborative verbal. | Paivio (1971), *Imagery and Verbal Processes.* New York: Holt, Rinehart and Winston. |
+| **Voice-first capture (vs. forms)** | Levels-of-processing: deeper, more elaborative encoding produces more durable traces than shallow, structured encoding. Spontaneous voice memos generate semantic/elaborative encoding; form-filling produces shallow item-level encoding. | Craik & Lockhart (1972), *Levels of processing: A framework for memory research.* Journal of Verbal Learning and Verbal Behavior, 11, 671–684. |
+| **Per-person history (timeline of re-meetings)** | Schema completion + spaced retrieval: each new note is a retrieval-practice event for the prior schema, distributing rehearsal across time. The timeline is itself a spacing intervention. | Roediger & Karpicke (2006), *Test-enhanced learning.* Psychological Science, 17(3), 249–255. |
+| **Calendar-driven proactive nudges** | Spacing effect (distributed practice >> massed practice); event-triggered cuing matches encoding context. The cron rehearses the entry at exactly the moment the encoding context is about to recur. | Cepeda et al. (2006), *Distributed practice in verbal recall tasks.* Psychological Bulletin, 132(3), 354–380. |
+| **Read-aloud (browser speechSynthesis on briefings)** | Dual-coding (again) + the production effect: hearing oneself / a synthesized voice say the words activates phonological representations alongside the visual. | MacLeod et al. (2010), *The production effect: delineation of a phenomenon.* Journal of Experimental Psychology: Learning, Memory, and Cognition, 36(3), 671–685. |
+| **2–3 sentence briefing length cap** | Working-memory capacity (Miller's 7±2; modern estimates ≈4) constrains how much can be held while walking into a social event. The brief is sized for the bottleneck, not the database. | Cowan (2001), *The magical number 4 in short-term memory.* Behavioral and Brain Sciences, 24(1), 87–114. |
+| **Lead briefings with names + distinctive traits** | Distinctiveness effect (von Restorff): atypical or distinctive items are preferentially retrieved. Tattoos, kids' names, pets are higher-value cues than generic facts. | von Restorff (1933), *Über die Wirkung von Bereichsbildungen im Spurenfeld.* Psychologische Forschung, 18, 299–342. |
+| **Place + traits + names prompt structure (extraction)** | Self-reference + elaborative interrogation: extracting *why* this person is memorable creates stronger encoding than extracting *what* they look like. The prompts ask for distinctive traits, not just names. | Symons & Johnson (1997), *The self-reference effect in memory: A meta-analysis.* Psychological Bulletin, 121(3), 371–394. |
+
+The single design principle in section 9 — *be the spark, not the warehouse* — is itself an application of cue-dependent retrieval theory: the user's brain holds the memory; the app holds only the cue.
+
+## 6. Where we win, where we are vulnerable
 
 ### 5.1 We win when
 
@@ -193,7 +223,7 @@ Every personal CRM competitor positions itself in some "professional networking"
 
 ---
 
-## 6. Roadmap that strengthens the moat
+## 7. Roadmap that strengthens the moat
 
 This is a roadmap of *moat-deepening* features, not feature-of-the-week ideas. Each row asks: does this make Pocket Steve harder to replace?
 
@@ -212,7 +242,7 @@ Note that nothing on this list pivots us toward a sales CRM, a feed, an enterpri
 
 ---
 
-## 7. Validation evidence and what we still need to learn
+## 8. Validation evidence and what we still need to learn
 
 ### 7.1 What's known to work (signal we already have)
 
@@ -233,7 +263,7 @@ These are answered by use, not by debate.
 
 ---
 
-## 8. The principle that decides everything
+## 9. The principle that decides everything
 
 When in doubt, the design rule is:
 
@@ -249,9 +279,22 @@ Stay narrow. Ship sharp.
 
 ## Appendix A — Source map
 
-**Memory science**
+**Memory science (peer-reviewed primary sources)**
+- Ebbinghaus, H. (1885). *Über das Gedächtnis* (the original forgetting curve). [Replication, PMC 2015](https://pmc.ncbi.nlm.nih.gov/articles/PMC4492928/)
+- Tulving, E., & Thomson, D.M. (1973). *Encoding specificity and retrieval processes in episodic memory.* Psychological Review, 80(5), 352–373.
+- Tulving, E., & Pearlstone, Z. (1966). *Availability versus accessibility of information in memory.* Journal of Verbal Learning and Verbal Behavior, 5, 381–391.
+- Paivio, A. (1971). *Imagery and Verbal Processes.* New York: Holt, Rinehart and Winston.
+- Craik, F.I.M., & Lockhart, R.S. (1972). *Levels of processing: A framework for memory research.* Journal of Verbal Learning and Verbal Behavior, 11, 671–684.
+- Roediger, H.L., & Karpicke, J.D. (2006). *Test-enhanced learning: Taking memory tests improves long-term retention.* Psychological Science, 17(3), 249–255.
+- Cepeda, N.J., Pashler, H., Vul, E., Wixted, J.T., & Rohrer, D. (2006). *Distributed practice in verbal recall tasks: A review and quantitative synthesis.* Psychological Bulletin, 132(3), 354–380.
+- MacLeod, C.M., Gopie, N., Hourihan, K.L., Neary, K.R., & Ozubko, J.D. (2010). *The production effect.* Journal of Experimental Psychology: Learning, Memory, and Cognition, 36(3), 671–685.
+- Cowan, N. (2001). *The magical number 4 in short-term memory.* Behavioral and Brain Sciences, 24(1), 87–114.
+- von Restorff, H. (1933). *Über die Wirkung von Bereichsbildungen im Spurenfeld.* Psychologische Forschung, 18, 299–342.
+- Symons, C.S., & Johnson, B.T. (1997). *The self-reference effect in memory: A meta-analysis.* Psychological Bulletin, 121(3), 371–394.
+- Zheng, L., et al. (2023). *Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena.* [arXiv:2306.05685](https://arxiv.org/abs/2306.05685)
+
+**Memory science (secondary readings)**
 - [Forgetting curve — Wikipedia](https://en.wikipedia.org/wiki/Forgetting_curve)
-- [Replication and analysis of Ebbinghaus's forgetting curve (PMC, 2015)](https://pmc.ncbi.nlm.nih.gov/articles/PMC4492928/)
 - [The forgetting curve — Decision Lab](https://thedecisionlab.com/reference-guide/psychology/forgetting-curve)
 - [Encoding, retrieval, and forgetting — Premier MCAT Prep](https://premiermcatprep.com/mcat-books/behavioral-sciences/memory-attention-and-cognition/encoding-retrieval-forgetting)
 - [The forgetting curve — Structural Learning](https://www.structural-learning.com/post/ebbinghaus-forgetting-curve)
