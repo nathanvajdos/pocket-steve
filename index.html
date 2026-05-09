@@ -42,23 +42,27 @@
     <!-- Onboarding overlay — shown to new users, dismissible -->
     <section id="view-onboarding" class="view onboarding-overlay">
       <div class="onboard-stage" data-step="1">
-        <div class="onboard-emoji">👋</div>
-        <h2>Welcome to Steve.</h2>
-        <p>Talk to me about anyone you meet — names, kids, pets, where, anything that stuck out. I'll keep it for you.</p>
-        <button class="btn-primary" data-onboard="next">Show me how →</button>
+        <div class="onboard-step-mark">01</div>
+        <h2 class="onboard-h">Steve.</h2>
+        <p class="onboard-lede">Your memory, for the people you meet.</p>
+        <p class="onboard-body">Talk to me about anyone you bump into &mdash; names, kids, pets, where, anything that stuck out. I&rsquo;ll keep it for you.</p>
+        <button class="btn-primary" data-onboard="next">Show me how</button>
       </div>
       <div class="onboard-stage" data-step="2" hidden>
-        <div class="onboard-emoji">🎙️</div>
-        <h2>Tap. Talk. Done.</h2>
-        <p>One button captures everything. No forms, no fields. Just say it the way you'd tell a friend in the car: <em>"Met a couple at the school carnival, dog Otis, kid Malachi, from California, all tatted up."</em></p>
-        <button class="btn-primary" data-onboard="next">What about later? →</button>
+        <div class="onboard-step-mark">02</div>
+        <h2 class="onboard-h">Capture in three seconds.</h2>
+        <p class="onboard-lede">Voice, photo, or LinkedIn paste &mdash; whichever fits the moment.</p>
+        <p class="onboard-body">Walking back to your car: tap the mic, just talk. <em>&ldquo;Met a couple at the school carnival, dog Otis, kid Malachi, from California, all tatted up.&rdquo;</em></p>
+        <p class="onboard-body">At a conference: snap their badge or business card. The camera handles the rest.</p>
+        <button class="btn-primary" data-onboard="next">What about later?</button>
       </div>
       <div class="onboard-stage" data-step="3" hidden>
-        <div class="onboard-emoji">🧠</div>
-        <h2>I'll remember when you don't.</h2>
-        <p>Heading back somewhere? Tell me the place — I'll surface the people you've met there with a quick memory trigger before you walk in.</p>
-        <p class="prompt-text" style="margin-top:18px;">Optional: drop your calendar share URL in Settings later, and I'll email you a heads-up before any event with people you'd want to remember.</p>
-        <button class="btn-primary" data-onboard="finish">Let's go →</button>
+        <div class="onboard-step-mark">03</div>
+        <h2 class="onboard-h">I&rsquo;ll remember when you don&rsquo;t.</h2>
+        <p class="onboard-lede">Tell me where you&rsquo;re heading, I&rsquo;ll bring them to mind.</p>
+        <p class="onboard-body">Type the place &mdash; <em>&ldquo;school carnival&rdquo;</em> or <em>&ldquo;Lake House&rdquo;</em> &mdash; and I&rsquo;ll surface a quick memory trigger for everyone you&rsquo;ve met there. Names, kids, pets, distinctive details, follow-up threads.</p>
+        <p class="onboard-body onboard-body-muted">Optional, later: connect a calendar in Settings and I&rsquo;ll email you 30 minutes before any event matching someone you&rsquo;ve met.</p>
+        <button class="btn-primary" data-onboard="finish">Let&rsquo;s go</button>
       </div>
       <button class="onboard-skip" data-onboard="finish">Skip</button>
     </section>

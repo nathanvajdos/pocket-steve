@@ -839,28 +839,73 @@ textarea:focus, input:focus {
 }
 .onboard-stage[hidden] { display: none; }
 
+/* Legacy emoji slot — superseded by .onboard-step-mark; kept for any old
+   onboarding fragments still referencing it without breaking layout. */
 .onboard-emoji {
   font-size: 56px;
   margin-bottom: 20px;
   line-height: 1;
 }
 
-.onboard-stage h2 {
-  font-size: 30px;
+.onboard-step-mark {
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  margin: 0 0 14px;
-  line-height: 1.15;
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  margin-bottom: 32px;
+  font-variant-numeric: tabular-nums;
 }
 
-.onboard-stage p {
+.onboard-stage h2,
+.onboard-stage .onboard-h {
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0 0 14px;
+  line-height: 1.05;
+}
+
+.onboard-stage .onboard-lede {
+  margin: 0 0 24px;
+  font-size: 19px;
+  color: var(--text);
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+  max-width: 30ch;
+}
+
+.onboard-stage .onboard-body {
+  font-size: 16px;
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0 0 16px;
+  max-width: 38ch;
+}
+
+.onboard-stage .onboard-body-muted {
+  font-size: 13px;
+  margin-top: 24px;
+  opacity: 0.85;
+}
+
+.onboard-stage .onboard-body em {
+  color: var(--text);
+  font-style: italic;
+}
+
+.onboard-stage .btn-primary {
+  margin-top: 12px;
+}
+
+/* Legacy <p> rules kept tightly scoped so they don't fight the new
+   .onboard-lede / .onboard-body classes above. */
+.onboard-stage p:not(.onboard-lede):not(.onboard-body) {
   font-size: 17px;
   color: var(--muted);
   line-height: 1.5;
   margin: 0 0 24px;
 }
-
-.onboard-stage p em {
+.onboard-stage p:not(.onboard-lede):not(.onboard-body) em {
   color: var(--text);
   font-style: italic;
 }
