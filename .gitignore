@@ -7,3 +7,5 @@ node_modules
 
 .vercel
 .env.production.local
+.claude/launch.json
+scripts/verify-steve.mjs

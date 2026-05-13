@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#fafaf7" />
+  <title>Steve.ai — Verify</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    /* Verify-page-specific layout — kept inline so this page is fully self-contained
+       and the privacy story doesn't depend on style.css fetching successfully. */
+    body { background: var(--bg, #fafaf7); color: var(--text, #1a1a1c); }
+    .v-wrap { max-width: 760px; margin: 32px auto; padding: 0 20px 80px; }
+    .v-hero h1 { margin: 0 0 4px; font-size: 28px; letter-spacing: -0.02em; }
+    .v-hero p { margin: 0 0 24px; color: var(--muted, #6b6b70); font-size: 15px; line-height: 1.5; }
+    .v-section { background: var(--surface, #fff); border: 1px solid var(--border, #e5e5ea); border-radius: 14px; padding: 18px 18px 14px; margin: 14px 0; }
+    .v-section h2 { margin: 0 0 8px; font-size: 15px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--muted, #6b6b70); }
+    .v-section p { margin: 0 0 10px; font-size: 14px; line-height: 1.55; }
+    .v-tests { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
+    .v-test { display: flex; gap: 10px; align-items: baseline; padding: 4px 0; }
+    .v-test .v-mark { display: inline-block; width: 18px; flex-shrink: 0; font-weight: 700; }
+    .v-test.v-pass .v-mark { color: #2ea043; }
+    .v-test.v-fail .v-mark { color: #cf222e; }
+    .v-test.v-pending .v-mark { color: var(--muted, #6b6b70); }
+    .v-test .v-detail { color: var(--muted, #6b6b70); }
+    .v-summary { display: flex; gap: 14px; font-size: 14px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border, #e5e5ea); }
+    .v-summary strong { font-weight: 600; }
+    .v-summary .v-summary-pass { color: #2ea043; }
+    .v-summary .v-summary-fail { color: #cf222e; }
+    pre.v-dump { background: rgba(0,0,0,0.04); border-radius: 8px; padding: 12px 14px; max-height: 320px; overflow: auto; font-size: 12px; line-height: 1.5; }
+    .v-actions { margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .v-actions button { background: var(--surface, #fff); border: 1px solid var(--border, #e5e5ea); border-radius: 8px; padding: 8px 14px; font: inherit; font-size: 13px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+    .v-actions button:hover { border-color: var(--accent, #ff9500); }
+    .v-back { display: inline-block; margin-bottom: 16px; color: var(--muted, #6b6b70); text-decoration: none; font-size: 14px; }
+    .v-back:hover { color: var(--text, #1a1a1c); }
+  </style>
+</head>
+<body>
+  <div class="v-wrap">
+    <a class="v-back" href="/">&larr; Back to Steve.ai</a>
+    <header class="v-hero">
+      <h1>Verify</h1>
+      <p>This page proves what's on your device and what isn't. Modeled on Cue's privacy-by-architecture pattern. Open DevTools &rarr; Network and watch this page exercise the storage layer with zero outbound calls.</p>
+    </header>
+
+    <section class="v-section" id="v-section-tests">
+      <h2>Storage layer tests</h2>
+      <p>Exercises every function in <code>/src/storage/db.js</code> against your live IndexedDB. Runs automatically on load. Test data uses a sentinel id (<code>__verify-sentinel__</code>) and is cleaned up at the end of the run, so your real captures are untouched.</p>
+      <div class="v-tests" id="v-tests"></div>
+      <div class="v-summary" id="v-summary"></div>
+      <div class="v-actions">
+        <button id="v-rerun">Re-run tests</button>
+      </div>
+    </section>
+
+    <section class="v-section" id="v-section-live">
+      <h2>What's on your device, right now</h2>
+      <p>Live contents of your <code>SteveDB</code> IndexedDB. Plain JSON, no obfuscation. This is everything we have on you.</p>
+      <pre class="v-dump" id="v-live">(loading…)</pre>
+      <div class="v-actions">
+        <button id="v-export">Download as JSON</button>
+        <button id="v-refresh">Refresh</button>
+      </div>
+    </section>
+
+    <section class="v-section">
+      <h2>Verify it yourself</h2>
+      <p>The strongest privacy proof is the one you confirm in your own browser:</p>
+      <ol style="margin: 4px 0 0; padding-left: 20px; font-size: 14px; line-height: 1.6;">
+        <li>Open DevTools (Cmd+Option+I on Mac, F12 on Windows).</li>
+        <li>Switch to the <strong>Network</strong> tab. Click the &times; to clear.</li>
+        <li>Click <strong>Re-run tests</strong> above.</li>
+        <li>Watch the Network tab. Nothing should fire to any remote host.</li>
+      </ol>
+      <p style="margin-top: 10px;">Once Steve.ai's local-only mode is the default (phase 6 of the v2 rebuild), every interaction in the app will pass this same test. Until then, captures still flow through the existing Supabase path unless you enable local-only mode in Settings.</p>
+    </section>
+  </div>
+
+  <script type="module" src="/verify/verify.js"></script>
+</body>
+</html>
