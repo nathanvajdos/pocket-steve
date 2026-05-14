@@ -1,7 +1,7 @@
 {
-  "name": "Steve",
+  "name": "Steve.ai",
   "short_name": "Steve",
-  "description": "Remember the people you meet.",
+  "description": "iPhone-native memory app for the people you meet.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

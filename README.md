@@ -1,14 +1,16 @@
-# Steve
+# Steve.ai
 
-A memory trigger for the people you meet. Working title: Steve, after the conversation that started it.
+**Your iPhone's memory for the people you meet.**
+
+Working title: Steve, after the parking-lot conversation that started it.
 
 **Live:** https://memory-trigger.vercel.app  
 **Whitepaper:** [docs/whitepaper.md](./docs/whitepaper.md)  
 **North Star (decision rubric):** [docs/STEVE_NORTH_STAR.md](./docs/STEVE_NORTH_STAR.md) — read this before any product call. The Steve Arbiter subagent (`.claude/agents/steve-arbiter.md`) reads it on every fork.
 
-You meet someone interesting at the school carnival or the park. You talk into your phone for 20 seconds: *"Met a couple at the carnival, kid Malachi, dog Otis, from California, all tatted up."* The app pulls out the structured pieces and saves them to your account. Before your next event in that location, the app emails you a memory trigger — names, kids, pets, distinctive details — enough to spark your own memory before you walk in.
+You meet someone interesting at the school carnival or the park. You talk into your iPhone for 10 seconds: *"Met a couple at the carnival, kid Malachi, dog Otis, from California, all tatted up."* Steve pulls out the structured pieces. Before your next event in that location, he brings them back to mind — names, kids, pets, the distinctive thing that stuck out.
 
-Built as a PWA so it installs to the iPhone home screen with no app store. Multi-user with magic-link email login. Daily cron scans each user's calendar and emails them a memory trigger before any event matching someone they've met.
+**iPhone-native.** Steve.ai is a PWA that installs to your iPhone home screen with one Share-and-tap — full screen, no browser chrome, works offline. No App Store, no signup form, no password. Multi-user via OTP code sign-in. Daily cron scans your calendar and emails you a memory trigger before any event matching someone you've met.
 
 ## Stack
 

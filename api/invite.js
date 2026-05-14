@@ -78,15 +78,15 @@ export default async function handler(req, res) {
 function buildPlainTextBody({ inviterName, recipientFirstName, actionLink }) {
   return `Hi ${recipientFirstName},
 
-Try Steve.ai — a little memory app for the people you meet.
+Try Steve.ai — your iPhone's memory for the people you meet.
 
 Open this email on your iPhone and tap the link below to sign in instantly (no password):
 
 ${actionLink}
 
-Once it opens in Safari, tap Share → Add to Home Screen to make it a real app icon.
+Once it opens in Safari, tap Share → Add to Home Screen. You get a Steve.ai icon on your home screen — full screen, no browser, works like a native iPhone app.
 
-Then tap "+ Just met someone" and just talk — Steve.ai remembers everyone you meet so you can be the person who actually remembers names, kids, pets, and details next time you bump into them.
+Then tap "+ Just met someone" and just talk. Steve.ai keeps the dog's name, the kid's name, the thing they said that stuck out, and brings it all back to mind before you walk in next time.
 
 — ${inviterName}
 
