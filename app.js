@@ -281,26 +281,104 @@ document.getElementById('view-onboarding').addEventListener('click', (e) => {
   }
 });
 
+// Login flow uses OTP code (6-digit) entered directly in the PWA — not a
+// magic link clicked from the email. The magic-link path is broken on iOS
+// PWAs because clicking the link in Mail opens Safari (a different browser
+// context from the home-screen Steve), so Supabase's session lands in
+// Safari's storage and never makes it into the PWA. The OTP flow never
+// crosses that partition: user types the 6-digit code into the PWA itself.
+//
+// Requires the Supabase "Magic Link" email template to include {{ .Token }}
+// somewhere visible so the user sees the code. Dashboard:
+//   Authentication → Email Templates → Magic Link → edit body.
+//
+// Stores the pending email between step 1 and step 2 so we can verify
+// against the right address.
+let _pendingLoginEmail = '';
+
+const loginStepEmail = document.getElementById('login-step-email');
+const loginStepCode = document.getElementById('login-step-code');
+const loginStatus = document.getElementById('login-status');
+const loginEmailDisplay = document.getElementById('login-email-display');
+
+function showLoginStepEmail() {
+  loginStepEmail.hidden = false;
+  loginStepCode.hidden = true;
+  if (loginStatus) loginStatus.innerHTML = '';
+  document.getElementById('login-email').focus();
+}
+
+function showLoginStepCode(email) {
+  _pendingLoginEmail = email;
+  if (loginEmailDisplay) loginEmailDisplay.textContent = email;
+  loginStepEmail.hidden = true;
+  loginStepCode.hidden = false;
+  document.getElementById('login-code').focus();
+}
+
 document.getElementById('btn-login').addEventListener('click', async () => {
   const email = document.getElementById('login-email').value.trim();
-  if (!email) { flash(document.getElementById('login-status'), 'Type your email first.', 'error'); return; }
+  if (!email) { flash(loginStatus, 'Type your email first.', 'error'); return; }
   const btn = document.getElementById('btn-login');
   btn.disabled = true; btn.textContent = 'Sending...';
   try {
+    // shouldCreateUser:true makes this work for both new and existing users.
+    // Supabase will send a single email containing both a link and (if the
+    // template includes {{ .Token }}) a 6-digit OTP code.
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin }
+      options: {
+        shouldCreateUser: true,
+        emailRedirectTo: window.location.origin
+      }
     });
     if (error) throw error;
-    flash(document.getElementById('login-status'),
-      'Check your inbox. Tap the link in the email — it\'ll send you back here signed in.',
-      'loading');
+    showLoginStepCode(email);
+    flash(loginStatus, `I sent a 6-digit code to ${email}. Check your inbox (and spam).`, 'loading');
   } catch (err) {
-    const f = friendlyError(err, "I couldn't send a sign-in link to that email. Try again, or check the address.");
-    flash(document.getElementById('login-status'), f.text, 'error');
+    const f = friendlyError(err, "I couldn't send a code to that email. Try again, or check the address.");
+    flash(loginStatus, f.text, 'error');
   } finally {
-    btn.disabled = false; btn.textContent = 'Send magic link';
+    btn.disabled = false; btn.textContent = 'Send my code';
   }
+});
+
+document.getElementById('btn-verify-code').addEventListener('click', async () => {
+  const code = document.getElementById('login-code').value.trim().replace(/\s+/g, '');
+  if (!code || code.length < 6) {
+    flash(loginStatus, 'Type the 6-digit code from the email.', 'error');
+    return;
+  }
+  if (!_pendingLoginEmail) {
+    flash(loginStatus, 'Start over — type your email first.', 'error');
+    showLoginStepEmail();
+    return;
+  }
+  const btn = document.getElementById('btn-verify-code');
+  btn.disabled = true; btn.textContent = 'Signing you in...';
+  try {
+    const { error } = await supabase.auth.verifyOtp({
+      email: _pendingLoginEmail,
+      token: code,
+      type: 'email'
+    });
+    if (error) throw error;
+    // The onAuthStateChange handler will fire onSignedIn() with the new
+    // session — no need to navigate manually here.
+    flash(loginStatus, 'Signed in. One sec…', 'loading');
+  } catch (err) {
+    const f = friendlyError(err, "That code didn't work. Codes expire after 60 minutes — try sending a new one.");
+    flash(loginStatus, f.text, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign me in';
+  }
+});
+
+document.getElementById('btn-login-back').addEventListener('click', (e) => {
+  e.preventDefault();
+  _pendingLoginEmail = '';
+  document.getElementById('login-code').value = '';
+  showLoginStepEmail();
 });
 
 document.getElementById('btn-logout').addEventListener('click', async () => {
@@ -346,9 +424,6 @@ async function maybeMigrateLegacy() {
 // ---------- capture flow ----------
 
 const captureInput = document.getElementById('capture-input');
-const captureWhere = document.getElementById('capture-where');
-const captureNextAt = document.getElementById('capture-next-at');
-const captureNextWhere = document.getElementById('capture-next-where');
 const captureResult = document.getElementById('capture-result');
 const btnSave = document.getElementById('btn-save');
 const btnMic = document.getElementById('btn-mic');
@@ -525,7 +600,18 @@ photoInput.addEventListener('change', async (e) => {
       const existing = captureInput.value.trim();
       captureInput.value = existing ? `${existing}\n\n${parsed.raw_text}` : parsed.raw_text;
     }
-    if (parsed.where && !captureWhere.value.trim()) captureWhere.value = parsed.where;
+    // (Previously: separate where field auto-filled here. Now where is part
+    // of the textarea — if the photo extraction inferred a place, append it
+    // to the memo so the save-time extractor can use it.)
+    if (parsed.where) {
+      const placeLine = `Met at ${parsed.where}.`;
+      const cur = captureInput.value.trim();
+      if (cur && !cur.toLowerCase().includes(parsed.where.toLowerCase())) {
+        captureInput.value = `${cur}\n\n${placeLine}`;
+      } else if (!cur) {
+        captureInput.value = placeLine;
+      }
+    }
 
     photoPreview.querySelector('.photo-status').className = 'photo-status';
     photoPreview.querySelector('.photo-status').innerHTML = parsed.summary
@@ -592,7 +678,10 @@ function blobToBase64(blob) {
 
 btnSave.addEventListener('click', async () => {
   const text = captureInput.value.trim();
-  const where = captureWhere.value.trim();
+  // Place is now inferred from the memo text by the extractor — no separate
+  // input. The user mentions where ("at the school carnival", "at the lake
+  // house") in the same breath as everything else.
+  const where = '';
   if (!text) { flash(captureResult, 'Add a few words first — what did you notice?', 'error'); return; }
 
   btnSave.disabled = true;
@@ -691,13 +780,16 @@ async function finalizeSave(parsed, text, where, parentId) {
         raw: text,
         headline: parsed.headline,
         summary: parsed.summary,
-        where_met: where || parsed.where || 'Unspecified',
+        where_met: parsed.where || 'Unspecified',
         names: parsed.names || [],
         kids: parsed.kids || [],
         pets: parsed.pets || [],
         traits: parsed.traits || [],
-        next_likely_at: captureNextAt.value ? new Date(captureNextAt.value).toISOString() : null,
-        next_likely_where: captureNextWhere.value.trim() || null,
+        // next_likely_at + next_likely_where dropped from the capture screen
+        // in v1.7.16 — collapsed to a single input. Edit-after-save UI still
+        // supports these fields when the user wants to schedule a reminder.
+        next_likely_at: null,
+        next_likely_where: null,
         parent_id: parentId || null
       })
     });
@@ -706,8 +798,6 @@ async function finalizeSave(parsed, text, where, parentId) {
 
     renderCaptureResult(entry, !!parentId);
     captureInput.value = '';
-    captureNextAt.value = '';
-    captureNextWhere.value = '';
     photoPreview.hidden = true;
     photoPreview.innerHTML = '';
   } catch (err) {
@@ -1372,10 +1462,14 @@ function escapeHtml(s) {
     }
     if (action === 'capture' || text || where) {
       go('capture');
-      if (text) captureInput.value = text;
-      if (where) captureWhere.value = where;
+      // Combine text + where into the single capture input (the separate
+      // where field was removed in v1.7.16).
+      const parts = [];
+      if (text) parts.push(text);
+      if (where) parts.push(`Met at ${where}.`);
+      if (parts.length) captureInput.value = parts.join('\n\n');
       setTimeout(() => {
-        if (text || where) {
+        if (parts.length) {
           // Pre-filled — focus Save instead of mic so they can review and tap save
           captureInput.focus();
         } else {

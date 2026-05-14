@@ -33,7 +33,8 @@
 </head>
 <body>
   <!-- Shared autocomplete list — populated from the user's saved places.
-       Both capture-where and brief-where reference it via list="places". -->
+       brief-where references it via list="places" (the capture-where input
+       was removed in v1.7.16 — place is now part of the single capture memo). -->
   <datalist id="places"></datalist>
   <main id="app">
 
@@ -44,13 +45,24 @@
           <h1>Steve.</h1>
           <p class="login-tag">Remember the people you meet.</p>
         </header>
-        <div class="login-form">
-          <p class="login-copy">One email. One link. You&rsquo;re in.</p>
+
+        <!-- Step 1: email entry -->
+        <div class="login-form" id="login-step-email">
+          <p class="login-copy">Type your email. I&rsquo;ll send you a 6-digit code.</p>
           <input id="login-email" type="email" placeholder="you@example.com" autocomplete="email" inputmode="email" autocapitalize="off" autocorrect="off" />
-          <button class="btn-primary" id="btn-login">Send my sign-in link</button>
-          <div id="login-status"></div>
-          <p class="login-fineprint">No password. No account form. The link is the sign-in.</p>
+          <button class="btn-primary" id="btn-login">Send my code</button>
         </div>
+
+        <!-- Step 2: code entry (shown after email submitted) -->
+        <div class="login-form" id="login-step-code" hidden>
+          <p class="login-copy">Check <strong id="login-email-display">your inbox</strong> for the 6-digit code from Steve.ai. Type it below.</p>
+          <input id="login-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="6" placeholder="123456" />
+          <button class="btn-primary" id="btn-verify-code">Sign me in</button>
+          <button class="link-button" id="btn-login-back" style="margin-top: 8px;">Use a different email</button>
+        </div>
+
+        <div id="login-status"></div>
+        <p class="login-fineprint">No password. The code is the sign-in. Codes expire in 60 minutes.</p>
       </div>
       <p class="hint login-install-hint" id="install-hint" hidden>
         Tap <strong>Share</strong> &rarr; <strong>Add to Home Screen</strong> to use Steve like an app.
@@ -174,33 +186,14 @@
       </label>
       <input id="capture-photo-input" type="file" accept="image/*" capture="environment" hidden />
 
-      <details class="enrich-fold enrich-fold-quiet">
-        <summary>Or type it</summary>
-        <div class="enrich-body">
-          <textarea id="capture-input" rows="5" placeholder="Met a couple at the school carnival. Dog named Otis, kid Malachi, from California, all tatted up..."></textarea>
-        </div>
-      </details>
+      <!-- One input. Voice fills it. Photo extraction fills it. User types if
+           they prefer. The extractor pulls out names, kids, pets, traits, and
+           the place from the text. No second box for "where" — just say it. -->
+      <textarea id="capture-input" rows="5" placeholder="Or type it here. Say where you met them — &ldquo;at the school carnival&rdquo;, &ldquo;lake house&rdquo;, &ldquo;the office&rdquo; — it helps me bring them back next time."></textarea>
 
       <div id="photo-preview" hidden></div>
 
       <button class="btn-primary" id="btn-save">Save to your memory</button>
-
-      <details class="capture-details">
-        <summary>Add details for better recall <span class="optional">&middot; optional</span></summary>
-        <div class="capture-details-body">
-          <div class="row">
-            <label>Where did this happen?</label>
-            <input id="capture-where" type="text" list="places" autocomplete="off" placeholder="e.g. Elementary School Carnival" />
-            <p class="row-hint">This is what I&rsquo;ll match against next time you say &ldquo;Heading somewhere?&rdquo;</p>
-          </div>
-          <div class="row">
-            <label>When might you see them next?</label>
-            <input id="capture-next-at" type="datetime-local" />
-            <input id="capture-next-where" type="text" list="places" autocomplete="off" placeholder="Same place, or different?" style="margin-top:6px;" />
-            <p class="row-hint">If you set this, I&rsquo;ll bring them to mind the week of, and remind you 30 min before.</p>
-          </div>
-        </div>
-      </details>
 
       <div id="capture-result" hidden></div>
     </section>
