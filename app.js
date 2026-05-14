@@ -1174,9 +1174,6 @@ function escapeAttr(s) {
 async function renderSettings() {
   const emailEl = document.getElementById('settings-email');
   const urlInput = document.getElementById('settings-calendar-url');
-  const msSub = document.getElementById('ms-sub');
-  const btnConnect = document.getElementById('btn-connect-ms');
-  const btnDisconnect = document.getElementById('btn-disconnect-ms');
   const anonPill = document.getElementById('settings-anon-pill');
   const claimBlock = document.getElementById('settings-claim');
 
@@ -1193,48 +1190,14 @@ async function renderSettings() {
   }
   urlInput.value = '';
 
-  // Surface OAuth callback flags from the URL (set by /api/oauth/microsoft/callback)
-  const hashParams = new URLSearchParams(location.search);
-  if (hashParams.get('oauthConnected')) {
-    flash(document.getElementById('settings-status'), 'Outlook connected. I\'ll watch your calendar daily for places where you\'ve met someone.', 'loading');
-    history.replaceState({}, '', location.pathname);
-  } else if (hashParams.get('oauthError')) {
-    flash(document.getElementById('settings-status'), 'Could not connect: ' + hashParams.get('oauthError'), 'error');
-    history.replaceState({}, '', location.pathname);
-  }
-
   try {
     const r = await fetchAuth('/api/profile', { method: 'GET' });
     if (r.ok) {
-      const { profile, microsoft } = await r.json();
+      const { profile } = await r.json();
       if (profile?.calendar_ics_url) urlInput.value = profile.calendar_ics_url;
-
-      if (microsoft) {
-        msSub.textContent = `Connected as ${microsoft.email || 'your Outlook account'}.`;
-        btnConnect.hidden = true;
-        btnDisconnect.hidden = false;
-      } else {
-        msSub.textContent = 'One-click. Read-only access to your calendar.';
-        btnConnect.hidden = false;
-        btnDisconnect.hidden = true;
-      }
     }
   } catch {}
 }
-
-document.getElementById('btn-connect-ms').addEventListener('click', async () => {
-  const status = document.getElementById('settings-status');
-  flash(status, 'Redirecting to Microsoft...', 'loading');
-  try {
-    const r = await fetchAuth('/api/oauth/microsoft?action=start', { method: 'GET' });
-    if (!r.ok) throw new Error(await r.text());
-    const { authorizeUrl } = await r.json();
-    window.location.href = authorizeUrl;
-  } catch (err) {
-    const f = friendlyError(err, "I couldn't start the Outlook sign-in. Try again.");
-    flash(status, f.text, 'error');
-  }
-});
 
 document.getElementById('btn-send-invite').addEventListener('click', async () => {
   const status = document.getElementById('invite-status');
@@ -1300,21 +1263,6 @@ document.getElementById('btn-claim-account').addEventListener('click', async () 
   } finally {
     btn.disabled = false;
     btn.textContent = 'Save my account';
-  }
-});
-
-document.getElementById('btn-disconnect-ms').addEventListener('click', async () => {
-  if (!confirm('Disconnect Outlook? I\'ll stop watching your calendar until you reconnect.')) return;
-  const status = document.getElementById('settings-status');
-  flash(status, 'Disconnecting...', 'loading');
-  try {
-    const r = await fetchAuth('/api/oauth/microsoft?action=disconnect', { method: 'POST' });
-    if (!r.ok) throw new Error(await r.text());
-    flash(status, 'Outlook disconnected.', 'loading');
-    renderSettings();
-  } catch (err) {
-    const f = friendlyError(err, "I couldn't disconnect Outlook. Try again.");
-    flash(status, f.text, 'error');
   }
 });
 

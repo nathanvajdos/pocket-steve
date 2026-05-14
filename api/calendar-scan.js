@@ -11,7 +11,6 @@
 import { serviceClient } from './_supabase.js';
 import { parseIcs, eventsInWindow } from './_ics.js';
 import { sendEmail } from './_email.js';
-import { getValidAccessToken, fetchEventsInWindow } from './_microsoft.js';
 import { complete } from './_models.js';
 
 export default async function handler(req, res) {
@@ -31,46 +30,29 @@ export default async function handler(req, res) {
   const startISO = new Date(now).toISOString();
   const endISO = new Date(horizon).toISOString();
 
-  // 1. Build the union of users-to-scan: anyone with an .ics URL OR an OAuth connection.
-  const [{ data: icsProfiles }, { data: oauthRows }] = await Promise.all([
-    supa.from('profiles').select('user_id, email, calendar_ics_url').not('calendar_ics_url', 'is', null),
-    supa.from('oauth_tokens').select('user_id, account_email').eq('provider', 'microsoft')
-  ]);
-  const oauthIds = new Set((oauthRows || []).map(o => o.user_id));
-  const icsIds = new Set((icsProfiles || []).map(p => p.user_id));
-  const allUserIds = new Set([...oauthIds, ...icsIds]);
-
-  // Fetch fresh emails for users coming in via the oauth path who don't have a profile row yet.
-  const { data: profileRows } = await supa
+  // 1. Pull users-to-scan: anyone with a .ics URL set in their profile.
+  //    (Microsoft OAuth path removed in v1.7.19 — required Azure App Registration
+  //    Nathan hasn't done; was dead-coded. .ics paste is the only calendar surface.)
+  const { data: icsProfiles } = await supa
     .from('profiles')
     .select('user_id, email, calendar_ics_url')
-    .in('user_id', Array.from(allUserIds));
-  const profileMap = new Map((profileRows || []).map(p => [p.user_id, p]));
+    .not('calendar_ics_url', 'is', null);
+  const profileMap = new Map((icsProfiles || []).map(p => [p.user_id, p]));
 
-  const summary = { users: allUserIds.size, nudges: 0, errors: [] };
+  const summary = { users: profileMap.size, nudges: 0, errors: [] };
 
-  for (const userId of allUserIds) {
-    const p = profileMap.get(userId) || { user_id: userId, email: null, calendar_ics_url: null };
+  for (const [userId, p] of profileMap) {
     try {
-      // 2. Fetch upcoming events — prefer Microsoft OAuth if connected, else .ics URL
-      let upcoming = [];
-      if (oauthIds.has(userId)) {
-        const accessToken = await getValidAccessToken(userId);
-        if (!accessToken) {
-          summary.errors.push({ user: p.email, step: 'ms-token-refresh' });
-          continue;
-        }
-        upcoming = await fetchEventsInWindow({ accessToken, startISO, endISO });
-      } else if (p.calendar_ics_url) {
-        const icsResp = await fetch(p.calendar_ics_url, { redirect: 'follow' });
-        if (!icsResp.ok) {
-          summary.errors.push({ user: p.email, step: 'fetch-ics', status: icsResp.status });
-          continue;
-        }
-        const ics = await icsResp.text();
-        const allEvents = parseIcs(ics);
-        upcoming = eventsInWindow(allEvents, now, horizon);
+      // 2. Fetch upcoming events from the user's .ics URL
+      if (!p.calendar_ics_url) continue;
+      const icsResp = await fetch(p.calendar_ics_url, { redirect: 'follow' });
+      if (!icsResp.ok) {
+        summary.errors.push({ user: p.email, step: 'fetch-ics', status: icsResp.status });
+        continue;
       }
+      const ics = await icsResp.text();
+      const allEvents = parseIcs(ics);
+      const upcoming = eventsInWindow(allEvents, now, horizon);
       if (!upcoming.length) continue;
 
       // 3. User's entries

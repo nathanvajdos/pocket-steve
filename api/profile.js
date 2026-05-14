@@ -1,24 +1,12 @@
 // /api/profile
 //
-// GET  -> returns the user's profile (calendar_ics_url, microsoft_connected boolean)
+// GET  -> returns { profile: { calendar_ics_url, ... } | null }
 // PUT  -> upserts the user's profile { calendar_ics_url }
+//
+// Microsoft OAuth path removed in v1.7.19. The Outlook check + `microsoft` return
+// field are gone; the only calendar integration is the user-pasted .ics URL.
 
-import { requireUser, serviceClient } from './_supabase.js';
-
-async function checkMicrosoftConnected(userId) {
-  try {
-    const supa = serviceClient();
-    const { data } = await supa
-      .from('oauth_tokens')
-      .select('user_id, account_email')
-      .eq('user_id', userId)
-      .eq('provider', 'microsoft')
-      .maybeSingle();
-    return data ? { email: data.account_email } : null;
-  } catch {
-    return null;
-  }
-}
+import { requireUser } from './_supabase.js';
 
 export default async function handler(req, res) {
   const auth = await requireUser(req, res);
@@ -33,11 +21,7 @@ export default async function handler(req, res) {
         .eq('user_id', user.id)
         .maybeSingle();
       if (error) throw error;
-      const ms = await checkMicrosoftConnected(user.id);
-      return res.status(200).json({
-        profile: profile || null,
-        microsoft: ms          // null when not connected, { email } when connected
-      });
+      return res.status(200).json({ profile: profile || null });
     }
 
     if (req.method === 'PUT') {
