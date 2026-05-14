@@ -51,6 +51,46 @@
       max-width: 600px;
       margin: 0 auto 32px;
     }
+    /* Single-screen demo mode — when ?only=<name> is in the URL we hide every
+       other phone and center the chosen one for a full-screen demo on phone. */
+    body.only-mode { padding-top: 12px; }
+    body.only-mode .phone-page-title,
+    body.only-mode .phone-page-tag { display: none; }
+    body.only-mode .phone:not(.phone-only) { display: none; }
+    body.only-mode .show-row { margin-top: 28px; }
+    body.only-mode .phone.phone-only { margin: 0 auto; }
+    .only-nav {
+      display: none;
+      max-width: 760px;
+      margin: 24px auto 0;
+      padding: 0 16px;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    body.only-mode .only-nav { display: flex; }
+    .only-nav a {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid #e5e5ea;
+      text-decoration: none;
+      color: #1a1a1c;
+      font: 600 12px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+      letter-spacing: 0.02em;
+    }
+    .only-nav a.active { background: #1a1a1c; color: #fff; border-color: #1a1a1c; }
+    .only-nav a:hover { border-color: #ff9500; }
+    .only-back {
+      display: block;
+      text-align: center;
+      margin-top: 20px;
+      color: #6b6b70;
+      font: 500 13px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+      text-decoration: none;
+    }
+    .only-back:hover { color: #1a1a1c; }
   </style>
 </head>
 <body>
@@ -61,7 +101,7 @@
     <div class="show-row" style="margin-top: 60px;">
 
       <!-- ============== HOME ============== -->
-      <div class="phone">
+      <div class="phone" data-screen="home">
         <div class="phone-label">Home</div>
         <main>
           <section class="view active">
@@ -89,7 +129,7 @@
       </div>
 
       <!-- ============== LOGIN (step 1) ============== -->
-      <div class="phone">
+      <div class="phone" data-screen="login-1">
         <div class="phone-label">Sign in — code (step 1)</div>
         <main>
           <section class="view active">
@@ -110,7 +150,7 @@
       </div>
 
       <!-- ============== LOGIN (step 2 — code entry) ============== -->
-      <div class="phone">
+      <div class="phone" data-screen="login-2">
         <div class="phone-label">Sign in — code (step 2)</div>
         <main>
           <section class="view active">
@@ -132,7 +172,7 @@
       </div>
 
       <!-- ============== CAPTURE (the one-input version) ============== -->
-      <div class="phone">
+      <div class="phone" data-screen="capture">
         <div class="phone-label">Capture (one input)</div>
         <main>
           <section class="view active">
@@ -171,7 +211,7 @@
       </div>
 
       <!-- ============== BRIEF ============== -->
-      <div class="phone">
+      <div class="phone" data-screen="brief">
         <div class="phone-label">Brief — bring them to mind</div>
         <main>
           <section class="view active">
@@ -198,7 +238,7 @@
       </div>
 
       <!-- ============== SETTINGS (account section) ============== -->
-      <div class="phone">
+      <div class="phone" data-screen="settings">
         <div class="phone-label">Settings</div>
         <main>
           <section class="view active">
@@ -220,6 +260,36 @@
       </div>
 
     </div>
+
+    <!-- Tab-style nav for jumping between screens in single-screen mode -->
+    <nav class="only-nav" id="only-nav">
+      <a href="?only=home" data-screen="home">Home</a>
+      <a href="?only=login-1" data-screen="login-1">Sign in 1</a>
+      <a href="?only=login-2" data-screen="login-2">Sign in 2</a>
+      <a href="?only=capture" data-screen="capture">Capture</a>
+      <a href="?only=brief" data-screen="brief">Brief</a>
+      <a href="?only=settings" data-screen="settings">Settings</a>
+    </nav>
+    <a class="only-back" href="show-steve.html" id="only-back" style="display:none;">&larr; See all six on one page</a>
   </div>
+
+  <script>
+    // Single-screen demo mode: ?only=<screen-name> hides everything but the
+    // matching .phone. Lets us hand someone a focused URL per screen.
+    (function () {
+      const params = new URLSearchParams(location.search);
+      const only = params.get('only');
+      if (!only) return;
+      const target = document.querySelector(`.phone[data-screen="${only}"]`);
+      if (!target) return;
+      document.body.classList.add('only-mode');
+      target.classList.add('phone-only');
+      document.getElementById('only-back').style.display = 'block';
+      // Highlight the active tab
+      document.querySelectorAll('#only-nav a').forEach((a) => {
+        if (a.dataset.screen === only) a.classList.add('active');
+      });
+    })();
+  </script>
 </body>
 </html>
