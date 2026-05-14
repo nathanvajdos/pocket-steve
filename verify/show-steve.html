@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Steve.ai — every screen, on one page</title>
+  <link rel="stylesheet" href="/style.css" />
+  <style>
+    /* Static visual showcase — no JS, no auth, no async state. Stitches the
+       four primary views together so a screenshot tells the whole story.
+       Mirrors index.html markup verbatim — if the visual changes, this
+       page changes alongside it. */
+    body { background: #efeee9; margin: 0; padding: 24px 12px 60px; }
+    .show-wrap { max-width: 1400px; margin: 0 auto; }
+    .show-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 380px)); gap: 24px; justify-content: center; }
+    .phone {
+      background: #fafaf7;
+      border-radius: 32px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08), inset 0 0 0 8px #1a1a1c;
+      padding: 28px 18px 32px;
+      width: 360px;
+      height: 720px;
+      overflow: hidden;
+      position: relative;
+      margin: 0 auto;
+    }
+    .phone-label {
+      position: absolute;
+      top: -22px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font: 600 12px/1 -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6b6b70;
+    }
+    .phone main { height: 100%; overflow: hidden; }
+    .phone .view { display: block !important; }
+    .phone-page-title {
+      text-align: center;
+      font: 600 22px/1 -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+      letter-spacing: -0.02em;
+      color: #1a1a1c;
+      margin: 32px 0 8px;
+    }
+    .phone-page-tag {
+      text-align: center;
+      color: #6b6b70;
+      font: 400 14px/1.4 -apple-system, BlinkMacSystemFont, sans-serif;
+      max-width: 600px;
+      margin: 0 auto 32px;
+    }
+  </style>
+</head>
+<body>
+  <div class="show-wrap">
+    <h1 class="phone-page-title">Steve.ai — v1.7.16</h1>
+    <p class="phone-page-tag">Same files served by the live PWA at memory-trigger.vercel.app — rendered statically here, no auth bootstrap, no async state. Every screen on one page.</p>
+
+    <div class="show-row" style="margin-top: 60px;">
+
+      <!-- ============== HOME ============== -->
+      <div class="phone">
+        <div class="phone-label">Home</div>
+        <main>
+          <section class="view active">
+            <header class="home-hero">
+              <h1>Steve.</h1>
+              <p class="home-tag">Your memory, for the people you meet.</p>
+            </header>
+            <div class="home-cta">
+              <button class="btn-primary btn-cta">
+                <span class="btn-cta-main">+ Just met someone</span>
+                <span class="btn-cta-sub">Talk. I'll remember.</span>
+              </button>
+              <button class="btn-cta btn-cta-secondary">
+                <span class="btn-cta-main">Heading somewhere?</span>
+                <span class="btn-cta-sub">I'll bring back the people you've met there.</span>
+              </button>
+            </div>
+            <div class="home-secondary">
+              <button class="link-button">Everyone I've met</button>
+              <span class="link-sep">·</span>
+              <button class="link-button">Settings</button>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <!-- ============== LOGIN (step 1) ============== -->
+      <div class="phone">
+        <div class="phone-label">Sign in — code (step 1)</div>
+        <main>
+          <section class="view active">
+            <div class="login-stage">
+              <header class="login-hero">
+                <h1>Steve.</h1>
+                <p class="login-tag">Remember the people you meet.</p>
+              </header>
+              <div class="login-form">
+                <p class="login-copy">Type your email. I&rsquo;ll send you a 6-digit code.</p>
+                <input type="email" placeholder="you@example.com" value="" />
+                <button class="btn-primary">Send my code</button>
+              </div>
+              <p class="login-fineprint">No password. The code is the sign-in. Codes expire in 60 minutes.</p>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <!-- ============== LOGIN (step 2 — code entry) ============== -->
+      <div class="phone">
+        <div class="phone-label">Sign in — code (step 2)</div>
+        <main>
+          <section class="view active">
+            <div class="login-stage">
+              <header class="login-hero">
+                <h1>Steve.</h1>
+                <p class="login-tag">Remember the people you meet.</p>
+              </header>
+              <div class="login-form">
+                <p class="login-copy">Check <strong>nathan@example.com</strong> for the 6-digit code from Steve.ai. Type it below.</p>
+                <input type="text" inputmode="numeric" placeholder="123456" maxlength="6" />
+                <button class="btn-primary">Sign me in</button>
+                <button class="link-button" style="margin-top: 8px;">Use a different email</button>
+              </div>
+              <p class="login-fineprint">No password. The code is the sign-in. Codes expire in 60 minutes.</p>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <!-- ============== CAPTURE (the one-input version) ============== -->
+      <div class="phone">
+        <div class="phone-label">Capture (one input)</div>
+        <main>
+          <section class="view active">
+            <header class="bar">
+              <button class="back">&larr;</button>
+              <h2>Just met someone</h2>
+            </header>
+            <p class="capture-hero">
+              Just <strong>tell me about them</strong>. I&rsquo;ll remember for you.
+            </p>
+            <button class="mic-button" type="button">
+              <span class="mic-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" y1="19" x2="12" y2="23"></line>
+                  <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+              </span>
+              <span class="mic-label">Tap and tell me</span>
+            </button>
+            <p class="mic-cue">Names, kids, pets, where you met &mdash; anything you noticed.</p>
+            <label class="cam-button">
+              <span class="cam-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                  <circle cx="12" cy="13" r="4"></circle>
+                </svg>
+              </span>
+              <span>Snap a card or name tag</span>
+            </label>
+            <textarea rows="4" placeholder="Or type it here. Say where you met them — &ldquo;at the school carnival&rdquo;, &ldquo;lake house&rdquo;, &ldquo;the office&rdquo; — it helps me bring them back next time."></textarea>
+            <button class="btn-primary">Save to your memory</button>
+          </section>
+        </main>
+      </div>
+
+      <!-- ============== BRIEF ============== -->
+      <div class="phone">
+        <div class="phone-label">Brief — bring them to mind</div>
+        <main>
+          <section class="view active">
+            <header class="bar">
+              <button class="back">&larr;</button>
+            </header>
+            <div class="brief-hero">
+              <h2 class="brief-h">Where are you headed?</h2>
+              <p class="brief-tag">I&rsquo;ll bring the people you&rsquo;ve met there to mind before you walk in.</p>
+            </div>
+            <input type="text" placeholder="School carnival. Lake house. The office." value="" />
+            <button class="btn-primary">Bring them to mind</button>
+            <p class="brief-fineprint">I match loosely &mdash; type how you&rsquo;d say it, not exactly how you saved it.</p>
+            <div style="margin-top: 16px;">
+              <div class="card">
+                <div class="where">school carnival</div>
+                <h3>California couple, dog Otis, kid Malachi</h3>
+                <div class="summary">All tatted up. He&rsquo;s a contractor, she runs a kids&rsquo; art studio. Talked about having them over for dinner.</div>
+                <div class="meta">Met 2 weeks ago</div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <!-- ============== SETTINGS (account section) ============== -->
+      <div class="phone">
+        <div class="phone-label">Settings</div>
+        <main>
+          <section class="view active">
+            <header class="bar">
+              <button class="back">&larr;</button>
+            </header>
+            <div class="settings-hero">
+              <h2 class="settings-h">Settings</h2>
+              <p class="settings-tag">Connect a calendar. Invite a friend. Manage your account.</p>
+            </div>
+            <div class="settings-section">
+              <div class="settings-section-label">Calendar nudges</div>
+              <p class="settings-section-desc">When I see an upcoming event in your calendar that matches a place where you&rsquo;ve met someone, I&rsquo;ll email you the memory trigger 30 minutes before.</p>
+              <input type="url" placeholder="Paste your calendar share URL" />
+              <button class="btn-primary" style="margin-top:10px;">Save calendar</button>
+            </div>
+          </section>
+        </main>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
