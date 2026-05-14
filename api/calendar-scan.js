@@ -45,7 +45,11 @@ export default async function handler(req, res) {
     try {
       // 2. Fetch upcoming events from the user's .ics URL
       if (!p.calendar_ics_url) continue;
-      const icsResp = await fetch(p.calendar_ics_url, { redirect: 'follow' });
+      // Apple Calendar's "Share Link" hands back webcal:// URLs — same content
+      // as https, just the protocol Apple uses to tell the OS to open in
+      // Calendar.app. fetch() can't follow webcal://, so translate.
+      const url = p.calendar_ics_url.replace(/^webcal:\/\//i, 'https://');
+      const icsResp = await fetch(url, { redirect: 'follow' });
       if (!icsResp.ok) {
         summary.errors.push({ user: p.email, step: 'fetch-ics', status: icsResp.status });
         continue;

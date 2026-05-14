@@ -241,24 +241,29 @@
 
       <div class="settings-section">
         <div class="settings-section-label">Calendar nudges</div>
-        <p class="settings-section-desc">When I see an upcoming event in your calendar that matches a place where you&rsquo;ve met someone, I&rsquo;ll email you the memory trigger 30 minutes before.</p>
+        <p class="settings-section-desc">When an upcoming event in your calendar matches a place where you&rsquo;ve met someone, I&rsquo;ll email you the memory trigger 30 minutes before.</p>
 
-        <input id="settings-calendar-url" type="url" placeholder="Paste your calendar share URL" inputmode="url" autocomplete="off" />
+        <!-- iPhone-native flow surfaced up front: Apple Calendar on iPhone is the
+             5-tap path. Other platforms still work via the help fold below. -->
+        <div class="iphone-cal-steps">
+          <div class="iphone-cal-title">Get your link in 5 taps on your iPhone</div>
+          <ol class="iphone-cal-list">
+            <li>Open the <strong>Calendar</strong> app on your iPhone</li>
+            <li>Tap <strong>Calendars</strong> at the bottom of the screen</li>
+            <li>Tap the <strong>(i)</strong> next to the calendar you want me to watch</li>
+            <li>Toggle <strong>Public Calendar</strong> on, then tap <strong>Share Link</strong> &rarr; <strong>Copy</strong></li>
+            <li>Come back here and paste below &mdash; I&rsquo;ll handle the rest</li>
+          </ol>
+        </div>
+
+        <input id="settings-calendar-url" type="url" placeholder="Paste here (webcal:// or https:// both work)" inputmode="url" autocomplete="off" />
         <button class="btn-primary" id="btn-save-calendar" style="margin-top:10px;">Save calendar</button>
         <div id="settings-status"></div>
 
         <details class="ics-help">
-          <summary>How to get the URL from your calendar</summary>
+          <summary>Using Google Calendar or Outlook instead?</summary>
           <div class="ics-help-body">
-            <p><strong>Apple Calendar (iPhone)</strong></p>
-            <ol>
-              <li>Calendar app &rarr; tap <strong>Calendars</strong> at the bottom</li>
-              <li>Tap the <strong>(i)</strong> next to a calendar</li>
-              <li>Toggle <strong>Public Calendar</strong> on</li>
-              <li>Tap <strong>Share Link</strong>, then <strong>Copy</strong></li>
-            </ol>
-
-            <p><strong>Google Calendar</strong></p>
+            <p><strong>Google Calendar</strong> (need a desktop / laptop browser for this)</p>
             <ol>
               <li>calendar.google.com &rarr; gear &rarr; <strong>Settings</strong></li>
               <li>Pick the calendar &rarr; <strong>Integrate calendar</strong></li>

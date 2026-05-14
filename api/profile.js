@@ -26,10 +26,15 @@ export default async function handler(req, res) {
 
     if (req.method === 'PUT') {
       const body = req.body || {};
+      // Apple Calendar gives back webcal:// URLs from "Share Link" — same
+      // content as https, just Apple's "open in Calendar.app" protocol.
+      // Normalize on save so the cron + every downstream read sees https.
+      const rawUrl = body.calendar_ics_url ?? null;
+      const url = rawUrl ? rawUrl.replace(/^webcal:\/\//i, 'https://') : null;
       const row = {
         user_id: user.id,
         email: user.email,
-        calendar_ics_url: body.calendar_ics_url ?? null
+        calendar_ics_url: url
       };
       const { data, error } = await supa
         .from('profiles')
